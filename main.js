@@ -15,7 +15,7 @@ add ui stating checkmate status and current turn
 add stalemate detection
 */ 
 
-const board_dim = 8
+export const board_dim = 8
 
 const unicode_pieces = {
   White: {
@@ -144,7 +144,7 @@ class Piece {
   }
 }
 
-class Pawn extends Piece {
+export class Pawn extends Piece {
   constructor(color) {
     super(color)
     this.double_jump_turn = -1
@@ -185,7 +185,7 @@ class Pawn extends Piece {
   }
 }
 
-class Knight extends Piece {
+export class Knight extends Piece {
   constructor(color) {
     super(color)
   }
@@ -200,7 +200,7 @@ class Knight extends Piece {
   }
 }
 
-class Bishop extends Piece {
+export class Bishop extends Piece {
   constructor(color) {
     super(color)
   }
@@ -209,7 +209,7 @@ class Bishop extends Piece {
   }
 }
 
-class Rook extends Piece {
+export class Rook extends Piece {
   constructor(color) {
     super(color)
     this.moved = false
@@ -223,7 +223,7 @@ class Rook extends Piece {
   }
 }
 
-class Queen extends Piece {
+export class Queen extends Piece {
   constructor(color) {
     super(color)
   }
@@ -232,7 +232,7 @@ class Queen extends Piece {
   }
 }
 
-class King extends Piece {
+export class King extends Piece {
   constructor(color) {
     super(color)
     this.moved = false
@@ -250,7 +250,7 @@ class King extends Piece {
   }
 }
 
-const piece_from_char = {
+export const piece_from_char = {
   'p': Pawn,
   'R': Rook,
   'N': Knight,
@@ -258,7 +258,7 @@ const piece_from_char = {
   'Q': Queen,
   'K': King,
 }
-class Board {
+export class Board {
   static in_bounds(spot) {
     return spot[0] >= 0 && spot[0] < board_dim && spot[1] >= 0 && spot[1] < board_dim
   }
@@ -367,7 +367,7 @@ class Board {
   }
 }
 
-async function load_images() {
+export async function load_images() {
   let images = {}
   let to_load = 0
   for (let [_, piece] of Object.entries(piece_from_char)) {
@@ -385,7 +385,7 @@ async function load_images() {
   return images
 }
 
-function draw_board(canvas_context, square_size, images, board, black_color, white_color) {
+export function draw_board(canvas_context, square_size, images, board, black_color, white_color) {
   for (let row = 0; row < board_dim; row++) {
     for (let col = 0; col < board_dim; col++) {
       let piece = board.at([row, col])
