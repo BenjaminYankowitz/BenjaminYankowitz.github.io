@@ -63,7 +63,13 @@ You should have received a copy of the GNU General Public License along with Jav
 					canvas_context.fillStyle = "rgb(255 0 0 / 20%)"
 					canvas_context.fillRect(selected[1] * square_size, selected[0] * square_size, square_size, square_size)
 				} else {
-					board.move_attempt(selected,click_to_slection(event))
+					const destination = click_to_slection(event)
+					if (board.move_attempt(selected,destination) === "promotion") {
+						draw_board_lambda()
+						while(!board.select_promotion(prompt("What would you like to promote to, Queen, Knight, Rook, or Bishop"))){
+							console.log
+						}
+					}
 					selected = null;
 					draw_board_lambda()
 				}
@@ -73,20 +79,6 @@ You should have received a copy of the GNU General Public License along with Jav
 				if (event.key === 'u') {
 					selected = null
 					board.undo_last()
-					draw_board_lambda()
-				}
-				if (selected == null) {
-					selected = click_to_slection(event)
-					if (!board.valid_select(selected)){
-						selected = null;
-						return
-					}
-					canvas_context.fillStyle = "rgb(255 0 0 / 20%)"
-					canvas_context.fillRect(selected[1] * square_size, selected[0] * square_size, square_size, square_size)
-				} else {
-					destination = click_to_slection(event)
-					board.move_attempt(selected,destination)
-					selected = null;
 					draw_board_lambda()
 				}
 			});

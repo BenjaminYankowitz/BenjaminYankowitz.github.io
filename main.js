@@ -104,7 +104,7 @@ class Piece {
     const [dy, dx] = point_dif(to, from)
     const jx = clamp(dx)
     const jy = clamp(dy)
-    console.assert(is_queen_move(from, to), "Base impl of path_clear only supports queen moves")
+    console.assert(is_queen_move(from, to), `Base impl of path_clear only supports queen moves, tried moving a ${this.name} from ${from[0]}, ${from[1]} to ${to[0]}, ${to[1]}`)
     let crow = from[0] + jy
     let ccol = from[1] + jx
     for (let i = 1; i < Math.max(Math.abs(dx), Math.abs(dy)); i++) {
@@ -130,18 +130,18 @@ class Piece {
   move_attempt(from, to, board) {
     console.assert(board.at(from) === this, "Tried to get one piece to move another")
     if (!this.is_legal_basic(from, to, board)) {
-      return false
+      return "failed"
     }
     const execution = this.execute_move(from, to, board)
     if (board.in_check()) {
       board.undo_current(from, to)
-      return false
+      return "failed"
     }
     if (typeof execution === "string") {
       return execution
     }
     board.commit_move(from, to);
-    return true
+    return "succeeded"
   }
 }
 
@@ -158,7 +158,7 @@ export class Pawn extends Piece {
       board.capture([from[0], to[1]])
     }
     if (to[0] === 0 || to[0] === board_dim - 1) {
-      board.promote_info = [from,to]
+      board.promote_info = [from, to]
       return "promotion"
     }
     super.execute_move(from, to, board)
@@ -399,13 +399,13 @@ export class Board {
     if (target === null) {
       return false;
     }
-    let [from,to] = this.promote_info
+    let [from, to] = this.promote_info
     const color = this.at(from).color
     this.capture(from)
     this.board[from[0]][from[1]] = new target(color)
-    this.move(from,to)
+    this.move(from, to)
     this.promote_info = null
-    this.commit_move(from,to)
+    this.commit_move(from, to)
     return true;
   }
 }
