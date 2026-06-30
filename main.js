@@ -179,6 +179,9 @@ export class Pawn extends Piece {
         return false
       }
     }
+    if (dx == 0 && board.at(to) !== null){
+      return false
+    }
     return true
   }
 }
