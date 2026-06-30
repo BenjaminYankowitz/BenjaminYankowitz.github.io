@@ -24,10 +24,10 @@ test('board init: back ranks correct', function () {
   const expected = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
   for (let col = 0; col < 8; col++) {
     const piece_black = board.at([0, col])
-    assert.strictEqual(piece_black instanceof expected[col], `col ${col}: expected ${expected[col].name}, got ${piece_black?.constructor.name}`, true)
+    assert.strictEqual(piece_black instanceof expected[col], true, `col ${col}: expected ${expected[col].name}, got ${piece_black?.constructor.name}`)
     assert.strictEqual(piece_black.color, 'Black', `col ${col}: expected Black ${piece_black?.constructor.name}, got ${piece_black.color}`)
     const piece_white = board.at([7, col])
-    assert.strictEqual(piece_white instanceof expected[col], `col ${col}: expected ${expected[col].name}, got ${piece_white?.constructor.name}`, true)
+    assert.strictEqual(piece_white instanceof expected[col], true, `col ${col}: expected ${expected[col].name}, got ${piece_white?.constructor.name}`)
     assert.strictEqual(piece_white.color, 'White', `col ${col}: expected White ${piece_white?.constructor.name}, got ${piece_white.color}`)
   }
 })
@@ -38,10 +38,10 @@ test('board init: pawns correct', function () {
   const board = new Board()
   for (let col = 0; col < 8; col++) {
     const piece_black = board.at([1, col])
-    assert.strictEqual(piece_black instanceof Pawn, `col ${col} expected pawn, got ${piece_black?.constructor.name}`, true)
+    assert.strictEqual(piece_black instanceof Pawn, true, `col ${col} expected pawn, got ${piece_black?.constructor.name}`)
     assert.strictEqual(piece_black.color, 'Black', `col ${col} expected black pawn, got ${piece_black.color}`)
     const piece_white = board.at([6, col])
-    assert.strictEqual(piece_white instanceof Pawn, `col ${col} expected pawn, got ${piece_white?.constructor.name}`, true)
+    assert.strictEqual(piece_white instanceof Pawn, true, `col ${col} expected pawn, got ${piece_white?.constructor.name}`)
     assert.strictEqual(piece_white.color, 'White', `col ${col} expected white pawn, got ${piece_white.color}`)
   }
 })
@@ -193,4 +193,257 @@ test('en passant: invalid one turn after double jump', function () {
   assert.strictEqual(board.move_attempt([0, 0], [1, 0]), true)
   assert.strictEqual(board.move_attempt([7, 7], [6, 7]), true)
   assert.strictEqual(board.move_attempt([4, 4], [5, 5]), false)
+})
+
+// --- Knight ---
+
+test('knight: L-shape move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Knight('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 5]), true)
+})
+
+test('knight: all L-shape variants valid', function () {
+  const offsets = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]]
+  for (const [dr, dc] of offsets) {
+    const board = new Board()
+    setup(board)
+    place(board, 4, 4, new Knight('White'))
+    assert.strictEqual(board.move_attempt([4, 4], [4 + dr, 4 + dc]), true, `L-shape [${dr},${dc}] should be valid`)
+  }
+})
+
+test('knight: jumps over intervening pieces', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Knight('White'))
+  place(board, 3, 4, new Pawn('Black'))
+  place(board, 4, 5, new Pawn('Black'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 5]), true)
+})
+
+test('knight: invalid non-L move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Knight('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [4, 6]), false)
+})
+
+// --- Bishop ---
+
+test('bishop: diagonal move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Bishop('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 6]), true)
+})
+
+test('bishop: blocked by piece in path', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Bishop('White'))
+  place(board, 3, 5, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 6]), false)
+})
+
+test('bishop: invalid non-diagonal move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Bishop('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [4, 7]), false)
+})
+
+// --- Rook ---
+
+test('rook: horizontal move', function () {
+  const board = new Board()
+  setup(board)
+  const rook = new Rook('White')
+  place(board, 4, 0, rook)
+  assert.strictEqual(board.move_attempt([4, 0], [4, 6]), true)
+  assert.strictEqual(board.at([4, 6]), rook)
+})
+
+test('rook: vertical move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Rook('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [1, 4]), true)
+})
+
+test('rook: blocked by piece in path', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Rook('White'))
+  place(board, 4, 6, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [4, 7]), false)
+})
+
+test('rook: captures opponent piece', function () {
+  const board = new Board()
+  setup(board)
+  const rook = new Rook('White')
+  const target = new Pawn('Black')
+  place(board, 4, 4, rook)
+  place(board, 4, 7, target)
+  assert.strictEqual(board.move_attempt([4, 4], [4, 7]), true)
+  assert.strictEqual(board.at([4, 7]), rook)
+})
+
+test('rook: cannot capture own piece', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Rook('White'))
+  place(board, 4, 7, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [4, 7]), false)
+})
+
+test('rook: invalid diagonal move', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Rook('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [6, 6]), false)
+})
+
+// --- Queen ---
+
+test('queen: moves like rook', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Queen('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [4, 7]), true)
+})
+
+test('queen: moves like bishop', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Queen('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 6]), true)
+})
+
+test('queen: blocked by piece on diagonal', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 4, 4, new Queen('White'))
+  place(board, 3, 5, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([4, 4], [2, 6]), false)
+})
+
+// --- King ---
+
+test('king: single step in any direction', function () {
+  const directions = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+  for (const [dr, dc] of directions) {
+    const board = new Board()
+    clear(board)
+    place(board, 4, 4, new King('White')) 
+    place(board, 0, 0, new King('Black'))
+    assert.strictEqual(board.move_attempt([4, 4], [4 + dr, 4 + dc]), true, `direction [${dr},${dc}] should be valid`)
+  }
+})
+
+test('king: invalid two-step move', function () {
+  const board = new Board()
+  setup(board)
+  assert.strictEqual(board.move_attempt([7, 7], [5, 7]), false)
+})
+
+// --- in_check ---
+
+test('in_check: rook on same rank threatens king', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 4, 4, new King('White'))
+  place(board, 0, 0, new King('Black'))
+  place(board, 4, 0, new Rook('Black'))
+  assert.strictEqual(board.in_check(), true)
+})
+
+test('in_check: blocked rook does not threaten king', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 4, 4, new King('White'))
+  place(board, 0, 0, new King('Black'))
+  place(board, 4, 0, new Rook('Black'))
+  place(board, 4, 2, new Pawn('White'))
+  assert.strictEqual(board.in_check(), false)
+})
+
+test('in_check: no threats', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 4, 4, new King('White'))
+  place(board, 0, 0, new King('Black'))
+  assert.strictEqual(board.in_check(), false)
+})
+
+// --- Check prevention ---
+
+test('move that exposes king to check is rejected', function () {
+  const board = new Board()
+  clear(board)
+  const whiteKing = new King('White')
+  const whiteRook = new Rook('White')
+  place(board, 7, 4, whiteKing)
+  place(board, 7, 3, whiteRook)
+  place(board, 0, 0, new King('Black'))
+  place(board, 7, 0, new Rook('Black'))
+
+  assert.strictEqual(board.move_attempt([7, 3], [6, 3]), false)
+  assert.strictEqual(board.at([7, 3]), whiteRook)
+  assert.strictEqual(board.at([6, 3]), null)
+})
+
+// --- Undo ---
+
+test('undo: restores moved piece to original square', function () {
+  const board = new Board()
+  setup(board)
+  const rook = new Rook('White')
+  place(board, 4, 4, rook)
+
+  board.move_attempt([4, 4], [4, 7])
+  assert.strictEqual(board.at([4, 7]), rook)
+
+  board.undo_last()
+  assert.strictEqual(board.at([4, 4]), rook)
+  assert.strictEqual(board.at([4, 7]), null)
+})
+
+test('undo: restores captured piece', function () {
+  const board = new Board()
+  setup(board)
+  const rook = new Rook('White')
+  const target = new Pawn('Black')
+  place(board, 4, 4, rook)
+  place(board, 4, 7, target)
+
+  board.move_attempt([4, 4], [4, 7])
+  board.undo_last()
+  assert.strictEqual(board.at([4, 4]), rook)
+  assert.strictEqual(board.at([4, 7]), target)
+})
+
+test('undo: restores en passant captured pawn', function () {
+  const board = new Board()
+  setup(board)
+  const whitePawn = new Pawn('White')
+  const blackPawn = new Pawn('Black')
+  place(board, 6, 5, whitePawn)
+  place(board, 4, 4, blackPawn)
+
+  board.move_attempt([6, 5], [4, 5])
+  board.move_attempt([4, 4], [5, 5])
+
+  board.undo_last()
+  assert.strictEqual(board.at([4, 4]), blackPawn)
+  assert.strictEqual(board.at([4, 5]), whitePawn)
+  assert.strictEqual(board.at([5, 5]), null)
+})
+
+test('undo: on empty history does nothing', function () {
+  const board = new Board()
+  board.undo_last()
+  assert.strictEqual(board.at([0, 0]) instanceof Rook, true)
 })
