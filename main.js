@@ -177,6 +177,9 @@ export class Pawn extends Piece {
     if (Math.abs(dy) > 2) {
       return false
     }
+    if (Math.abs(dx) >= 2) {
+      return false
+    }
     if (Math.abs(dy) === 2 && (dx !== 0 || from[0] !== home_row)) {
       return false
     }
