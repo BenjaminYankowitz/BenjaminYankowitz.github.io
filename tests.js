@@ -126,6 +126,14 @@ test('pawn: double step rejected from non-home row', function () {
   assert.strictEqual(board.move_attempt([5, 4], [3, 4]), 'failed')
 })
 
+test('pawn: Cannot move more than one sideways to capture', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 5, 4, new Pawn('White'))
+  place(board, 4, 2, new Pawn('Black'))
+  assert.strictEqual(board.move_attempt([5, 4], [4, 2]), 'failed')
+})
+
 test('pawn: blocked by piece directly ahead', function () {
   const board = new Board()
   setup(board)
