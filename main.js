@@ -48,9 +48,7 @@ function board_as_string(board, piece_to_char) {
       if (piece === null) {
         symbol = piece_to_char.Empty
       } else {
-        let piece_color = piece.color
-        let piece_name = piece.piece_name
-        symbol = piece_to_char[piece_color][piece_name]
+        symbol = piece_to_char[piece.color][piece.piece_name]
       }
       str += ' ' + symbol + ' '
       str += '|'
@@ -177,7 +175,7 @@ export class Pawn extends Piece {
     }
     if (dx != 0 && board.at(to) === null) {
       let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
-      if (enpassant_piece === null || enpassant_piece.piece_name != this.piece_name || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
+      if (enpassant_piece === null || !(enpassant_piece instanceof Pawn) || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
         return false
       }
     }
@@ -316,7 +314,7 @@ export class Board {
         }
         if (piece.color !== turn) {
           attackers.push([row, col])
-        } else if (piece.piece_name === "King") {
+        } else if (piece instanceof King) {
           king = [row, col]
         }
       }
