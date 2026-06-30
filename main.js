@@ -122,7 +122,7 @@ class Piece {
   }
   is_legal_basic(from, to, board) {
     const dest_piece = board.at(to)
-    return this.valid_pair(from, to) && (dest_piece === null || dest_piece.color != this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
+    return this.valid_pair(from, to) && dest_piece?.color != this.color && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
   execute_move(from, to, board) {
     board.move(from, to)
@@ -175,7 +175,7 @@ export class Pawn extends Piece {
     }
     if (dx != 0 && board.at(to) === null) {
       let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
-      if (enpassant_piece === null || !(enpassant_piece instanceof Pawn) || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
+      if (!(enpassant_piece instanceof Pawn) || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
         return false
       }
     }
