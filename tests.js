@@ -169,30 +169,95 @@ test('pawn: double step from home row (Black row 1)', function () {
 test('en passant: Black captures White immediately after double jump', function () {
   const board = new Board()
   setup(board)
-  const whitePawn = new Pawn('White')
-  const blackPawn = new Pawn('Black')
-  place(board, 6, 5, whitePawn)
-  place(board, 4, 4, blackPawn)
+  const white_pawn = new Pawn('White')
+  const black_pawn = new Pawn('Black')
+  place(board, 6, 5, white_pawn)
+  place(board, 4, 4, black_pawn)
 
   assert.strictEqual(board.move_attempt([6, 5], [4, 5]), true)
   assert.strictEqual(board.move_attempt([4, 4], [5, 5]), true)
   assert.strictEqual(board.at([4, 5]), null)
-  assert.strictEqual(board.at([5, 5]), blackPawn)
+  assert.strictEqual(board.at([5, 5]), black_pawn)
 })
 
 test('en passant: invalid one turn after double jump', function () {
   const board = new Board()
   setup(board)
 
-  const whitePawn = new Pawn('White')
-  place(board, 6, 5, whitePawn)
-  const blackPawn = new Pawn('Black')
-  place(board, 4, 4, blackPawn)
+  const white_pawn = new Pawn('White')
+  place(board, 6, 5, white_pawn)
+  const black_pawn = new Pawn('Black')
+  place(board, 4, 4, black_pawn)
 
   assert.strictEqual(board.move_attempt([6, 5], [4, 5]), true)
   assert.strictEqual(board.move_attempt([0, 0], [1, 0]), true)
   assert.strictEqual(board.move_attempt([7, 7], [6, 7]), true)
   assert.strictEqual(board.move_attempt([4, 4], [5, 5]), false)
+})
+
+test('promotion: can turn into queen', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("Queen"), true)
+  assert.strictEqual(board.turn_num, 1)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.at([0, 4]) instanceof Queen, true)
+})
+
+test('promotion: can turn into rook', function () {
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("Rook"), true)
+  assert.strictEqual(board.turn_num, 1)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+})
+
+test('promotion: cannot turn into king', function () {
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("King"), false)
+  assert.strictEqual(board.turn_num, 0)
+  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
+  assert.strictEqual(board.at([0, 4]), null)
+})
+
+test('promotion: cannot turn into pawn', function () {
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("Pawn"), false)
+  assert.strictEqual(board.turn_num, 0)
+  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
+  assert.strictEqual(board.at([0, 4]), null)
+})
+
+test('promotion: cannot turn into random string', function () {
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("Sfasf"), false)
+  assert.strictEqual(board.turn_num, 0)
+  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
+  assert.strictEqual(board.at([0, 4]), null)
+})
+
+test('promotion: can be undone', function () {
+  setup(board)
+  place(board, 1, 4, new Pawn('White'));
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.select_promotion("Bishop"), true)
+  assert.strictEqual(board.turn_num, 1)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.at([0, 4]) instanceof Bishop, true)
+  board.undo_last()
+  assert.strictEqual(board.turn_num, 0)
+  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
+  assert.strictEqual(board.at([0, 4]), null)
 })
 
 // --- Knight ---
@@ -337,7 +402,7 @@ test('king: single step in any direction', function () {
   for (const [dr, dc] of directions) {
     const board = new Board()
     clear(board)
-    place(board, 4, 4, new King('White')) 
+    place(board, 4, 4, new King('White'))
     place(board, 0, 0, new King('Black'))
     assert.strictEqual(board.move_attempt([4, 4], [4 + dr, 4 + dc]), true, `direction [${dr},${dc}] should be valid`)
   }
