@@ -529,3 +529,100 @@ test('undo: on empty history does nothing', function () {
   board.undo_last()
   assert.strictEqual(board.at([0, 0]) instanceof Rook, true)
 })
+
+test('undo: restores before castle', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.at([7, 4]) instanceof King, true)
+  assert.strictEqual(board.at([7, 7]) instanceof Rook, true)
+  for (let col = 5; col <= 6; col++) {
+    assert.strictEqual(board.at([7, col]), null, `col ${col} should be empty after undoing right castle`)
+  }
+
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.at([7, 4]) instanceof King, true)
+  assert.strictEqual(board.at([7, 0]) instanceof Rook, true)
+  for (let col = 1; col <= 3; col++) {
+    assert.strictEqual(board.at([7, col]), null, `col ${col} should be empty after undoing left castle`)
+  }
+})
+
+// --- Castling ---
+
+function setup_castle(board, color) {
+  clear(board)
+  const home_row = color === 'White' ? 7 : 0
+  const other_row = color === 'White' ? 0 : 7
+  const other_color = color === 'White' ? 'Black' : 'White'
+  place(board, home_row, 4, new King(color))
+  place(board, home_row, 0, new Rook(color))
+  place(board, home_row, 7, new Rook(color))
+  place(board, other_row, 4, new King(other_color))
+}
+
+test('Castling: can castle left', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'succeeded')
+  assert.strictEqual(board.at([7, 2]) instanceof King, true)
+  assert.strictEqual(board.at([7, 3]) instanceof Rook, true)
+  assert.strictEqual(board.at([7, 0]), null)
+})
+
+test('Castling: can castle right', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+  assert.strictEqual(board.at([7, 6]) instanceof King, true)
+  assert.strictEqual(board.at([7, 5]) instanceof Rook, true)
+  assert.strictEqual(board.at([7, 7]), null)
+})
+
+test('Castling: pieces in the way block', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  place(board, 7, 1, new Knight('White'))
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'failed')
+  board.board[7][1] = null
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'succeeded')
+})
+
+test('Castling: being in check blocks', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  place(board, 4, 4, new Rook('Black'))
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
+  board.board[4][4] = null
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
+
+test('Castling: check on the way blocks', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  place(board, 4, 5, new Rook('Black'))
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
+  board.board[4][5] = null
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
+
+test('Castling: King which moved blocks', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  board.at([7, 4]).moved = true
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
+  board.at([7, 4]).moved = false
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
+
+test('Castling: Rook which moved blocks', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  board.at([7, 7]).moved = true
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
+  board.at([7, 7]).moved = false
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
