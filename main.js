@@ -100,7 +100,7 @@ class Piece {
     console.assert(is_queen_move(from, to), "Base impl of path_clear only supports queen moves")
     let crow = from[0] + jy
     let ccol = from[1] + jx
-    for (let i = 0; i < Math.max(Math.abs(dx), Math.abs(dy)) - 2; i++) {
+    for (let i = 1; i < Math.max(Math.abs(dx), Math.abs(dy)); i++) {
       let s_piece = board.at([crow, ccol])
       if (s_piece != null) {
         return false
@@ -110,25 +110,27 @@ class Piece {
     }
     return true
   }
-  out_of_check(from, to, board) {
-    return true // To do implment
-  }
   valid_pair(from, to) {
     return Board.in_bounds(from) && Board.in_bounds(to) && !point_equal(from, to)
   }
-  is_legal(from, to, board) {
+  is_legal_basic(from, to, board) {
     const dest_piece = board.at(to)
-    return this.valid_pair(from, to) && (dest_piece === null || dest_piece.color != this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board) && this.out_of_check(from, to, board)
+    return this.valid_pair(from, to) && (dest_piece === null || dest_piece.color != this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
   execute_move(from, to, board) {
     board.move(from, to)
   }
   move_attempt(from, to, board) {
     console.assert(board.at(from) === this, "Tried to get one piece to move another")
-    if (!this.is_legal(from, to, board)) {
+    if (!this.is_legal_basic(from, to, board)) {
       return false
     }
     this.execute_move(from, to, board)
+    if (board.in_check()) {
+      board.undo_current(from, to)
+      return false
+    }
+    board.commit_move(from, to);
     return true
   }
 }
@@ -142,8 +144,8 @@ class Pawn extends Piece {
     const [dy, dx] = point_dif(to, from)
     if (Math.abs(dy) === 2) {
       this.double_jump_turn = board.turn_num
-    } else if (dx!=0 && board.at(to)===null) {
-      board.capture([from[0],to[1]])
+    } else if (dx != 0 && board.at(to) === null) {
+      board.capture([from[0], to[1]])
     }
     super.execute_move(from, to, board)
   }
@@ -252,7 +254,8 @@ class Board {
     return spot[0] >= 0 && spot[0] < board_dim && spot[1] >= 0 && spot[1] < board_dim
   }
   constructor() {
-    this.turn_num = 0
+    this.history = []
+    this.current_turn_capture = null
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
@@ -269,27 +272,73 @@ class Board {
       this.board[6][i] = new top("White")
       this.board[7][i] = new bottom("White")
     }
-    this.turn = "White"
+  }
+  undo_last() {
+    const action = this.history.pop()
+    this.undo(action[0], action[1], action[2])
+  }
+  undo(from, to, caputre_info) {
+    this.board[from[0]][from[1]] = this.at(to)
+    this.board[to[0]][to[1]] = null
+    if (caputre_info === null) {
+      return
+    }
+    this.board[caputre_info[0][0]][caputre_info[0][1]] = caputre_info[1]
+  }
+  undo_current(from, to) {
+    this.undo(from, to, this.current_turn_capture)
+    this.current_turn_capture = null
+  }
+  commit_move(from, to) {
+    this.history.push([from, to, this.current_turn_capture])
+    this.current_turn_capture = null
+  }
+  in_check() {
+    const turn = this.turn
+    let attackers = []
+    let king = null
+    for (let row = 0; row < board_dim; row++) {
+      for (let col = 0; col < board_dim; col++) {
+        const piece = this.at([row, col])
+        if (piece === null) {
+          continue
+        }
+        if (piece.color !== turn) {
+          attackers.push([row, col])
+        } else if (piece.piece_name === "King") {
+          king = [row, col]
+        }
+      }
+    }
+    console.assert(king !== null, "There must be king of both colors on the board")
+    for (let i = 0; i < attackers.length; i++) {
+      if (this.at(attackers[i]).is_legal_basic(attackers[i], king, this)) {
+        return true
+      }
+    }
+    return false
+  }
+  get turn_num() {
+    return this.history.length
+  }
+  get turn() {
+    if (this.turn_num % 2 == 0) {
+      return "White"
+    } else {
+      return "Black"
+    }
   }
   at(spot) {
     console.assert(Board.in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
-  capture(spot){
-    console.assert(this.at(spot)!==null, "Cannot capture nothing")
+  capture(spot) {
+    console.assert(this.at(spot) !== null, "Cannot capture nothing")
+    this.current_turn_capture = [spot, this.at(spot)]
     this.board[spot[0]][spot[1]] = null
   }
   move_attempt(from, to) {
-    if (!this.at(from).move_attempt(from, to, this)) {
-      return false
-    }
-    if (this.turn === "White") {
-      this.turn = "Black"
-    } else {
-      this.turn = "White"
-    }
-    this.turn_num++
-    return true
+    return this.at(from).move_attempt(from, to, this)
   }
   valid_select(spot) {
     if (!Board.in_bounds(spot)) {
@@ -299,6 +348,9 @@ class Board {
     return piece != null && piece.color === this.turn
   }
   move(from, to) {
+    if (this.at(to) !== null) {
+      this.capture(to)
+    }
     this.board[to[0]][to[1]] = this.at(from)
     this.board[from[0]][from[1]] = null
   }
