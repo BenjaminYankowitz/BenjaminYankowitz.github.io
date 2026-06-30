@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { Board, Pawn, Knight, Bishop, Rook, Queen, King, board_dim } from './main.js'
+import { Board, Pawn, Knight, Bishop, Rook, Queen, King, board_dim, unicode_pieces, board_as_string } from './main.js'
 
 function clear(board) {
   for (let row = 0; row < board_dim; row++)
@@ -200,63 +200,72 @@ test('promotion: can turn into queen', function () {
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("Queen"), true)
+  assert.strictEqual(board.select_promotion('Queen'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
-  assert.strictEqual(board.at([0, 4]) instanceof Queen, true)
+  assert.strictEqual(board.at([0, 4]).color, 'White')
+  assert.strictEqual(board.at([0, 4]) instanceof Queen, true, board_as_string(board, unicode_pieces))
 })
 
 test('promotion: can turn into rook', function () {
+  const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("Rook"), true)
+  assert.strictEqual(board.select_promotion('Rook'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
-  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+  assert.strictEqual(board.at([0, 4]).color, 'White')
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true, board_as_string(board, unicode_pieces))
 })
 
 test('promotion: cannot turn into king', function () {
+  const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("King"), false)
+  assert.strictEqual(board.select_promotion('King'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
   assert.strictEqual(board.at([0, 4]), null)
 })
 
 test('promotion: cannot turn into pawn', function () {
+  const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("Pawn"), false)
+  assert.strictEqual(board.select_promotion('Pawn'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
   assert.strictEqual(board.at([0, 4]), null)
 })
 
 test('promotion: cannot turn into random string', function () {
+  const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("Sfasf"), false)
+  assert.strictEqual(board.select_promotion('Sfasf'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
   assert.strictEqual(board.at([0, 4]), null)
 })
 
 test('promotion: can be undone', function () {
+  const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
-  assert.strictEqual(board.select_promotion("Bishop"), true)
+  assert.strictEqual(board.select_promotion('Bishop'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
   assert.strictEqual(board.at([0, 4]) instanceof Bishop, true)
+  assert.strictEqual(board.at([0, 4]).color, 'White')
   board.undo_last()
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
+  assert.strictEqual(board.at([1, 4]).color, 'White')
   assert.strictEqual(board.at([0, 4]), null)
 })
 

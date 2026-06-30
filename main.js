@@ -13,11 +13,11 @@ add promotion
 add checkmate detection
 add ui stating checkmate status and current turn
 add stalemate detection
-*/ 
+*/
 
 export const board_dim = 8
 
-const unicode_pieces = {
+export const unicode_pieces = {
   White: {
     King: '♔',
     Queen: '♕',
@@ -37,7 +37,7 @@ const unicode_pieces = {
   Empty: ' '
 }
 
-function board_as_string(board, piece_to_char) {
+export function board_as_string(board, piece_to_char) {
   let str = '-'.repeat(board_dim * 4 + 1)
   str += '\n'
   for (let row = 0; row < board_dim; row++) {
@@ -109,7 +109,7 @@ class Piece {
     let ccol = from[1] + jx
     for (let i = 1; i < Math.max(Math.abs(dx), Math.abs(dy)); i++) {
       let s_piece = board.at([crow, ccol])
-      if (s_piece != null) {
+      if (s_piece !== null) {
         return false
       }
       crow += jy
@@ -122,7 +122,7 @@ class Piece {
   }
   is_legal_basic(from, to, board) {
     const dest_piece = board.at(to)
-    return this.valid_pair(from, to) && dest_piece?.color != this.color && this.valid_path(from, to, board) && this.path_clear(from, to, board)
+    return this.valid_pair(from, to) && dest_piece?.color !== this.color && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
   execute_move(from, to, board) {
     board.move(from, to)
@@ -132,10 +132,13 @@ class Piece {
     if (!this.is_legal_basic(from, to, board)) {
       return false
     }
-    this.execute_move(from, to, board)
+    const execution = this.execute_move(from, to, board)
     if (board.in_check()) {
       board.undo_current(from, to)
       return false
+    }
+    if (typeof execution === "string") {
+      return execution
     }
     board.commit_move(from, to);
     return true
@@ -151,8 +154,12 @@ export class Pawn extends Piece {
     const [dy, dx] = point_dif(to, from)
     if (Math.abs(dy) === 2) {
       this.double_jump_turn = board.turn_num
-    } else if (dx != 0 && board.at(to) === null) {
+    } else if (dx !== 0 && board.at(to) === null) {
       board.capture([from[0], to[1]])
+    }
+    if (to[0] === 0 || to[0] === board_dim - 1) {
+      board.promote_info = [from,to]
+      return "promotion"
     }
     super.execute_move(from, to, board)
   }
@@ -170,16 +177,16 @@ export class Pawn extends Piece {
     if (Math.abs(dy) > 2) {
       return false
     }
-    if (Math.abs(dy) === 2 && (dx != 0 || from[0] != home_row)) {
+    if (Math.abs(dy) === 2 && (dx !== 0 || from[0] !== home_row)) {
       return false
     }
-    if (dx != 0 && board.at(to) === null) {
+    if (dx !== 0 && board.at(to) === null) {
       let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
       if (!(enpassant_piece instanceof Pawn) || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
         return false
       }
     }
-    if (dx == 0 && board.at(to) !== null){
+    if (dx === 0 && board.at(to) !== null) {
       return false
     }
     return true
@@ -251,6 +258,12 @@ export class King extends Piece {
   }
 }
 
+const promote_able_type = [
+  Rook, Knight, Bishop, Queen
+]
+
+export const promote_able = promote_able_type.map(function (piece) { return piece.name })
+
 export const piece_from_char = {
   'p': Pawn,
   'R': Rook,
@@ -264,6 +277,7 @@ export class Board {
     return spot[0] >= 0 && spot[0] < board_dim && spot[1] >= 0 && spot[1] < board_dim
   }
   constructor() {
+    this.promote_info = null;
     this.history = []
     this.current_turn_capture = null
     const basic_setup = [
@@ -279,8 +293,8 @@ export class Board {
       let bottom = piece_from_char[basic_setup_bottom[i]]
       this.board[0][i] = new bottom("Black")
       this.board[1][i] = new top("Black")
-      this.board[6][i] = new top("White")
-      this.board[7][i] = new bottom("White")
+      this.board[board_dim - 2][i] = new top("White")
+      this.board[board_dim - 1][i] = new bottom("White")
     }
   }
   undo_last() {
@@ -295,6 +309,7 @@ export class Board {
     if (caputre_info === null) {
       return
     }
+    this.promote_info = null
     this.board[caputre_info[0][0]][caputre_info[0][1]] = caputre_info[1]
   }
   undo_current(from, to) {
@@ -334,7 +349,7 @@ export class Board {
     return this.history.length
   }
   get turn() {
-    if (this.turn_num % 2 == 0) {
+    if (this.turn_num % 2 === 0) {
       return "White"
     } else {
       return "Black"
@@ -350,6 +365,9 @@ export class Board {
     this.board[spot[0]][spot[1]] = null
   }
   move_attempt(from, to) {
+    if (this.promote_info !== null) {
+      return "promotion"
+    }
     return this.at(from).move_attempt(from, to, this)
   }
   valid_select(spot) {
@@ -357,7 +375,7 @@ export class Board {
       return false
     }
     let piece = this.at(spot)
-    return piece != null && piece.color === this.turn
+    return piece !== null && piece.color === this.turn
   }
   move(from, to) {
     if (this.at(to) !== null) {
@@ -365,6 +383,30 @@ export class Board {
     }
     this.board[to[0]][to[1]] = this.at(from)
     this.board[from[0]][from[1]] = null
+  }
+  select_promotion(promote_to) {
+    console.assert(this.promote_info !== null, "Can only promote when something is ready to promote")
+    if (this.promote_info === null) {
+      return false;
+    }
+    let target = null;
+    for (let i = 0; i < promote_able.length; i++) {
+      if (promote_able[i] === promote_to) {
+        target = promote_able_type[i];
+        break;
+      }
+    }
+    if (target === null) {
+      return false;
+    }
+    let [from,to] = this.promote_info
+    const color = this.at(from).color
+    this.capture(from)
+    this.board[from[0]][from[1]] = new target(color)
+    this.move(from,to)
+    this.promote_info = null
+    this.commit_move(from,to)
+    return true;
   }
 }
 
@@ -396,7 +438,7 @@ export function draw_board(canvas_context, square_size, images, board, black_col
         canvas_context.fillStyle = black_color
       }
       canvas_context.fillRect(col * square_size, row * square_size, square_size, square_size)
-      if (piece != null) {
+      if (piece !== null) {
         let image = images[piece.name]
         const piece_scale = 20 / 24
         const piece_offset = (1 - piece_scale) / 2
