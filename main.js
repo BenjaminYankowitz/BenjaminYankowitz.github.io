@@ -53,8 +53,36 @@ function board_as_string(board, piece_to_char) {
   return str
 }
 
-function clamp(n){
-  return Math.min(Math.max(n,-1),1)
+function clamp(n) {
+  return Math.min(Math.max(n, -1), 1)
+}
+
+function point_dif(to, from) {
+  return [to[0] - from[0], to[1] - from[1]]
+}
+
+function point_add(point, dif) {
+  return [point[0] + dif[0], point[1] + dif[1]]
+}
+
+function point_equal(point1, point2) {
+  return point1[0] === point2[0] && point1[1] === point2[1]
+}
+
+function is_rook_move(from, to) {
+  const [dy, dx] = point_dif(to, from)
+  return dy === 0 || dx === 0
+}
+
+function is_bishop_move(from, to) {
+  const [dy, dx] = point_dif(to, from)
+  let abs_dy = Math.abs(dy)
+  let abs_dx = Math.abs(dx)
+  return abs_dx === abs_dy
+}
+
+function is_queen_move(from, to) {
+  return is_rook_move(from, to) || is_bishop_move(from, to)
 }
 
 class Piece {
@@ -66,31 +94,31 @@ class Piece {
   }
   get piece_name() { return this.constructor.name }
   path_clear(from, to, board) {
-    const dx = to[1]-from[1]
-    const dy = to[0]-from[0]
-    const abs_dx = Math.abs(dx)
-    const abs_dy = Math.abs(dy)
+    const [dy, dx] = point_dif(to, from)
     const jx = clamp(dx)
     const jy = clamp(dy)
-    console.assert(abs_dx===abs_dy || Math.min(abs_dx,abs_dy) === 0, "Base impl of path_clear only supports vertical horizontal and diagonal movement")
-    let crow = from[0]+jy
-    let ccol = from[1]+jx
-    for (let i = 0; i < Math.max(abs_dx,abs_dy)-2; i++){
-      let s_piece = board.at([crow,ccol])
+    console.assert(is_queen_move(from, to), "Base impl of path_clear only supports queen moves")
+    let crow = from[0] + jy
+    let ccol = from[1] + jx
+    for (let i = 0; i < Math.max(Math.abs(dx), Math.abs(dy)) - 2; i++) {
+      let s_piece = board.at([crow, ccol])
       if (s_piece != null) {
         return false
       }
-      crow+=jy
-      ccol+=jx
+      crow += jy
+      ccol += jx
     }
     return true;
   }
-  out_of_check(from, to, board){
+  out_of_check(from, to, board) {
     return true // To do implment
+  }
+  valid_pair(from, to) {
+    return Board.in_bounds(from) && Board.in_bounds(to) && !point_equal(from, to)
   }
   is_legal(from, to, board) {
     const dest_piece = board.at(to)
-    return (dest_piece === null || dest_piece.color != this.color) && this.path_clear(from, to, board) && this.out_of_check(from,to,board);
+    return this.valid_pair(from, to) && (dest_piece === null || dest_piece.color != this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board) && this.out_of_check(from, to, board);
   }
   execute_move(from, to, board) {
     board.move(from, to);
@@ -108,6 +136,32 @@ class Piece {
 class Pawn extends Piece {
   constructor(color) {
     super(color);
+    this.double_jump_turn = -1;
+  }
+  valid_path(from, to, board) {
+    const [dy, dx] = point_dif(to, from);
+    let color_dir = 1;
+    let home_row = 1;
+    if (this.color === "White") {
+      color_dir = -1
+      home_row = 6
+    }
+    if (dy * color_dir <= 0) {
+      return false
+    }
+    if (Math.abs(dy) > 2) {
+      return false
+    }
+    if (Math.abs(dy) === 2 && (dx != 0 || from[0] != home_row)) {
+      return false;
+    }
+    if (dx != 0 && board.at(to) === null) {
+      let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
+      if (enpassant_piece.piece_name != this.piece_name || enpassant_piece.double_jump_turn != board.turn_num - 1) {
+        return false
+      }
+    }
+    return true;
   }
 }
 
@@ -115,7 +169,13 @@ class Knight extends Piece {
   constructor(color) {
     super(color);
   }
-  path_clear(from, to, board){
+  valid_path(from, to, board) {
+    const [dy, dx] = point_dif(to, from)
+    let abs_dy = Math.abs(dy)
+    let abs_dx = Math.abs(dx)
+    return Math.min(abs_dy, abs_dx) === 1 && Math.max(abs_dy, abs_dx) === 2
+  }
+  path_clear(from, to, board) {
     return true
   }
 }
@@ -123,6 +183,9 @@ class Knight extends Piece {
 class Bishop extends Piece {
   constructor(color) {
     super(color);
+  }
+  valid_path(from, to, board) {
+    return is_bishop_move(from, to)
   }
 }
 
@@ -135,11 +198,17 @@ class Rook extends Piece {
     this.moved = true;
     super.execute_move(from, to, board)
   }
+  valid_path(from, to, board) {
+    return is_rook_move(from, to)
+  }
 }
 
 class Queen extends Piece {
   constructor(color) {
     super(color);
+  }
+  valid_path(from, to, board) {
+    return is_queen_move(from, to)
   }
 }
 
@@ -152,8 +221,12 @@ class King extends Piece {
     this.moved = true;
     super.execute_move(from, to, board)
   }
-  path_clear(from, to, board){
+  path_clear(from, to, board) {
     return true // To do add checking for castling
+  }
+  valid_path(from, to, board) {
+    const [dy, dx] = point_dif(to, from)
+    return Math.min(Math.abs(dy), Math.abs(dx)) === 1 // To do add checking for castling
   }
 }
 
@@ -166,10 +239,11 @@ const piece_from_char = {
   'K': King,
 }
 class Board {
-  in_bounds(spot) {
+  static in_bounds(spot) {
     return spot[0] >= 0 && spot[0] < board_dim && spot[1] >= 0 && spot[1] < board_dim;
   }
   constructor() {
+    this.turn_num = 0;
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
@@ -189,7 +263,7 @@ class Board {
     this.turn = "White"
   }
   at(spot) {
-    console.assert(this.in_bounds(spot), "Can only access points in bounds")
+    console.assert(Board.in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
   move_attempt(from, to) {
@@ -201,10 +275,11 @@ class Board {
     } else {
       this.turn = "White"
     }
+    this.turn_num++;
     return true
   }
   valid_select(spot) {
-    if (!this.in_bounds(spot)){
+    if (!Board.in_bounds(spot)) {
       return false;
     }
     let piece = this.at(spot)
