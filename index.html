@@ -49,8 +49,33 @@ You should have received a copy of the GNU General Public License along with Jav
 		let selected = null;
 		async function run() {
 			const images = await images_promise
+			draw_board_lambda = function (){
+				draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+			}
 			canvas.addEventListener('click', function (event) {
 				event.preventDefault()
+				if (selected === null) {
+					selected = click_to_slection(event)
+					if (!board.valid_select(selected)){
+						selected = null;
+						return
+					}
+					canvas_context.fillStyle = "rgb(255 0 0 / 20%)"
+					canvas_context.fillRect(selected[1] * square_size, selected[0] * square_size, square_size, square_size)
+				} else {
+					destination = click_to_slection(event)
+					board.move_attempt(selected,destination)
+					selected = null;
+					draw_board_lambda()
+				}
+			});
+			document.addEventListener('keydown', function (event) {
+				event.preventDefault()
+				if (event.key === 'u') {
+					selected = null
+					board.undo_last()
+					draw_board_lambda()
+				}
 				if (selected == null) {
 					selected = click_to_slection(event)
 					if (!board.valid_select(selected)){
@@ -63,10 +88,10 @@ You should have received a copy of the GNU General Public License along with Jav
 					destination = click_to_slection(event)
 					board.move_attempt(selected,destination)
 					selected = null;
-					draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+					draw_board_lambda()
 				}
 			});
-			draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+			draw_board_lambda()
 		}
 		run()
 	</script>

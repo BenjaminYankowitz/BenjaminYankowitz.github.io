@@ -275,7 +275,9 @@ class Board {
   }
   undo_last() {
     const action = this.history.pop()
-    this.undo(action[0], action[1], action[2])
+    if (action !== undefined) {
+      this.undo(...action)
+    }
   }
   undo(from, to, caputre_info) {
     this.board[from[0]][from[1]] = this.at(to)
