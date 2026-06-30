@@ -6,6 +6,15 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
+/* Todo 
+add unit tests
+add castling
+add promotion
+add checkmate detection
+add ui stating checkmate status and current turn
+add stalemate detection
+*/ 
+
 const board_dim = 8
 
 const unicode_pieces = {
