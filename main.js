@@ -139,8 +139,11 @@ class Pawn extends Piece {
     this.double_jump_turn = -1
   }
   execute_move(from, to, board) {
-    if (Math.abs(to[0] - from[0]) === 2) {
+    const [dy, dx] = point_dif(to, from)
+    if (Math.abs(dy) === 2) {
       this.double_jump_turn = board.turn_num
+    } else if (dx!=0 && board.at(to)===null) {
+      board.capture([from[0],to[1]])
     }
     super.execute_move(from, to, board)
   }
@@ -163,7 +166,7 @@ class Pawn extends Piece {
     }
     if (dx != 0 && board.at(to) === null) {
       let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
-      if (enpassant_piece.piece_name != this.piece_name || enpassant_piece.double_jump_turn != board.turn_num - 1) {
+      if (enpassant_piece === null || enpassant_piece.piece_name != this.piece_name || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
         return false
       }
     }
@@ -271,6 +274,10 @@ class Board {
   at(spot) {
     console.assert(Board.in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
+  }
+  capture(spot){
+    console.assert(this.at(spot)!==null, "Cannot capture nothing")
+    this.board[spot[0]][spot[1]] = null
   }
   move_attempt(from, to) {
     if (!this.at(from).move_attempt(from, to, this)) {
