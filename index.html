@@ -1,0 +1,265 @@
+<!--
+Copyright 2026 Benjamin Yankowitz
+This file is part of JavascriptChess.
+JavascriptChess is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+JavascriptChess is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
+-->
+
+
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Chess</title>
+	<link rel="icon" type="image/x-icon" href="/assets/Black Pawn.svg">
+	<style type="text/css">
+	</style>
+</head>
+
+<body>
+	<canvas width="100" height="100" class="myCanvas">
+		<p>Your browser doesn't support canvas.</p>
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</canvas>
+	<script type="text/javascript" src="main.js"></script>
+	<script type="text/javascript">
+		const black_tile = 'rgb(80,55,20)'
+		const white_tile = 'rgb(230,230,230)'
+		let images_promise = load_images()
+		const canvas = document.querySelector('.myCanvas')
+		const width = window.innerWidth
+		const height = window.innerHeight
+		const square_size = (Math.min(width, height)) / board_dim
+		const canvasLeft = canvas.offsetLeft + canvas.clientLeft;
+		const canvasTop = canvas.offsetTop + canvas.clientTop;
+		function click_to_slection(event) {
+			return [Math.floor((event.pageY -canvasTop) / square_size), Math.floor((event.pageX -canvasLeft) / square_size)]
+		}
+		canvas.width = square_size * board_dim
+		canvas.height = square_size * board_dim
+		const canvas_context = canvas.getContext('2d');
+		const board = new Board();
+		let selected = null;
+		async function run() {
+			const images = await images_promise
+			canvas.addEventListener('click', function (event) {
+				event.preventDefault()
+				if (selected == null) {
+					selected = click_to_slection(event)
+					if (!board.valid_select(selected)){
+						selected = null;
+						return
+					}
+					canvas_context.fillStyle = "rgb(255 0 0 / 20%)"
+					canvas_context.fillRect(selected[1] * square_size, selected[0] * square_size, square_size, square_size)
+				} else {
+					destination = click_to_slection(event)
+					board.move_attempt(selected,destination)
+					selected = null;
+					draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+				}
+			});
+			draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+		}
+		run()
+		// let moleImg = new Image();
+		// var loading = 2
+		// moleImg.src = 'assets/Black Bishop.png';
+		// moleImg.onload = function() {
+		// 	loading--
+		// }
+		// let wormImg = new Image();
+		// wormImg.src = 'assets/Black King.png';
+		// wormImg.onload = function() {
+		// 	loading--
+		// }
+		// var moleSheet = 0
+		// const wormVal = 200;
+		// var map = []
+		// var molePos = [0,0]
+		// var moleHunger = 601
+		// var moleDirection = 0
+		// var moleMovment = 0
+		// var moleSpeed = 5
+		// var moleDrain = 1
+		// var myInterval = setInterval(loadingFunc, 200)
+		// function loadingFunc(){
+		// 	if(loading==0){
+		// 		clearInterval(myInterval)
+		// 	}
+		// 	myInterval = setInterval(ZAWARLDO, 100)
+		// }
+
+		// for(let i = -1; i <= 1; i++){
+		// 	map[i] = []
+		// 	for(var i2 = -1; i2 <= 1; i2++){
+		// 		map[i][i2] = {dirt: 10, worm: false}
+		// 	}
+		// }
+		// map[0][0] = {dirt: 0, worm: false}
+		// var keyConvert = []
+		// keyConvert[87] = 0
+		// keyConvert[38] = 0
+		// keyConvert[68] = 1
+		// keyConvert[39] = 1
+		// keyConvert[83] = 2
+		// keyConvert[40] = 2
+		// keyConvert[65] = 3
+		// keyConvert[37] = 3
+		// function setKey(e){
+		// 	if(keyConvert[e.keyCode]!==undefined){
+		// 		moleDirection = keyConvert[e.keyCode]
+		// 	}
+		// }
+		// document.onkeydown = setKey
+		// function ZAWARLDO(){
+		// 	time+=1
+		// 	let directHold = moleDirection
+		// 	if(directHold==0){
+		// 		var toGo = [molePos[0],molePos[1]-1]
+		// 	} else if (directHold==1){
+		// 		var toGo = [molePos[0]+1,molePos[1]]
+		// 	}  else if (directHold==2){
+		// 		var toGo = [molePos[0],molePos[1]+1]
+		// 	} else{
+		// 		var toGo = [molePos[0]-1,molePos[1]]
+		// 	}
+		// 	var toGoInfo = map[toGo[0]][toGo[1]]
+		// 	if(toGoInfo.dirt>=moleMovment){
+		// 		toGoInfo.dirt-=moleMovment
+		// 		moleMovment = 0
+		// 	} else{
+		// 		moleSheet++
+		// 		moleSheet%=4
+		// 		moleMovment-toGoInfo.dirt
+		// 		toGoInfo.dirt = 0
+		// 		if(moleMovment>=10){
+		// 			molePos = toGo
+		// 			moleMovment-=10
+		// 			if(toGoInfo.worm){
+		// 				moleHunger+=wormVal
+		// 				toGoInfo.worm=false
+		// 			}
+		// 		}
+		// 	}
+		// 	moleMovment+=moleSpeed
+		// 	moleHunger-=moleDrain
+		// 	moleDrain+=0.01
+		// 	let success = true
+		// 	if(Math.random()*setPiece>100){
+		// 		let wallLength = Math.floor(5.1+(Math.random()+Math.random())*10)
+		// 		let direction = Math.floor(Math.random()*4)
+		// 		let offset = Math.round(wallLength*((Math.random()+Math.random())-1))
+		// 		if(direction === 0||direction === 2){
+		// 			let v = 3*direction-3;
+		// 			for(let i = 0; i < wallLength; i+=5){
+		// 				if(map[molePos[0]+i+offset]!==undefined){
+		// 					if(map[molePos[0]+i+offset][molePos[1]+v]!==undefined){
+		// 						success = false
+		// 						break
+		// 					}
+		// 				}
+		// 			}
+		// 			if(success){
+		// 				for(let i = 0; i < wallLength; i++){
+		// 					if(map[molePos[0]+i+offset] === undefined){
+		// 						map[molePos[0]+i+offset] = []
+		// 					}
+		// 					map[molePos[0]+i+offset][molePos[1]+v] = {dirt:35+10*Math.random(), worm:false}
+		// 				}
+		// 			}
+		// 		} else {
+		// 			let v = 3-3*(direction-1)
+		// 			if(map[molePos[0]+v]===undefined){
+		// 				success = true
+		// 				map[molePos[0]+v] = []
+		// 			} else {
+		// 				for(let i = 0; i <wallLength;i+=5){
+		// 					if(map[molePos[0]+v][molePos[1]+i+offset]!==undefined){
+		// 						success = false
+		// 						break
+		// 				}
+		// 			}
+		// 		}
+		// 		if(success){
+		// 			for(let i = 0; i <wallLength;i++){
+		// 				map[molePos[0]+v][molePos[1]+i+offset] = {dirt:35+10*Math.random(), worm:false}
+
+		// 			}
+		// 		}
+		// 		}
+		// 	} else{
+		// 		success = false
+		// 	}
+		// 	if(success){
+		// 		setPiece = 0
+		// 	} else {
+		// 		setPiece++
+		// 	}
+		// 	if(moleHunger<=0){
+		// 		clearInterval(myInterval)
+		// 		death()
+		// 	} else {
+		// 		draw()
+		// 	}
+		// }
+
+		// function draw(){
+		// 	let w = 0
+		// 	for(let i = molePos[0]-2; i<=molePos[0]+2;i++){
+		// 		if(map[i]===undefined){
+		// 			map[i] = []
+		// 		}
+		// 		let h = 0
+		// 		for(let i2 = molePos[1]-2; i2<=molePos[1]+2;i2++){
+		// 			if(map[i][i2]===undefined){
+		// 				map[i][i2] = {dirt:Math.random()+9.5,worm:Math.random()>0.9}
+		// 			}
+		// 			let r = 155
+		// 			let g = 118
+		// 			let b = 83
+		// 			r = 255-(255-r)*Math.min(9/4,Math.cbrt(map[i][i2].dirt-9))
+		// 			g = 255-(255-g)*Math.min(9/4,Math.cbrt(map[i][i2].dirt-9))
+		// 			b = 255-(255-b)*Math.min(9/4,Math.cbrt(map[i][i2].dirt-9))
+		// 			ctx.fillStyle = 'rgb('+r+', '+g+', '+b+')';
+		// 			ctx.fillRect(w*sqareSize, h*sqareSize, sqareSize, sqareSize);
+		// 			if(map[i][i2].worm){
+		// 				ctx.drawImage(wormImg, 0, 0, 960, 680, w*sqareSize, h*sqareSize, sqareSize, sqareSize*17/24);
+		// 			}
+		// 			h++
+		// 		}
+		// 		w++
+		// 	}
+		// 	ctx.save();
+		// 	ctx.translate(canvas.width/2,canvas.height/2);
+		// 	ctx.rotate(Math.PI/2*moleDirection+Math.PI);
+		// 	ctx.drawImage(moleImg, 55*moleSheet, 0, 55, 88, -sqareSize/4, -sqareSize/2, 5*sqareSize/8, sqareSize);
+		// 	ctx.restore();
+		// 	ctx.font = "30px Arial";
+		// 	ctx.fillStyle = "red";
+		// 	let txt = "You have "+Math.round(moleHunger/10)+" hunger left."
+		// 	let txt2 = "You have survived for "+time/10+" seconds."
+		// 	ctx.fillText(txt, 10, 30);
+		// 	ctx.fillText(txt2, 10, 70);
+		// }
+		// function death(){
+		// 	ctx.fillStyle = 'rgb(0, 0, 0)';
+		// 	ctx.fillRect(0, 0, canvas.width, canvas.height);
+		// 	ctx.font = "30px Arial";
+		// 	ctx.fillStyle = "red";
+		// 	ctx.textAlign = "center";
+		// 	let txt = "You have survived for "+time/10+" seconds."
+		// 	ctx.fillText(txt, canvas.width/2, canvas.height/2);
+
+		// }
+	</script>
+</body>
+
+</html>
