@@ -232,7 +232,7 @@ class King extends Piece {
   }
   valid_path(from, to, board) {
     const [dy, dx] = point_dif(to, from)
-    return Math.min(Math.abs(dy), Math.abs(dx)) === 1 // To do add checking for castling
+    return Math.max(Math.abs(dy), Math.abs(dx)) === 1 // To do add checking for castling
   }
 }
 
