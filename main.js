@@ -53,6 +53,10 @@ function board_as_string(board, piece_to_char) {
   return str
 }
 
+function clamp(n){
+  return Math.min(Math.max(n,-1),1)
+}
+
 class Piece {
   constructor(color) {
     this.color = color;
@@ -62,7 +66,24 @@ class Piece {
   }
   get piece_name() { return this.constructor.name }
   path_clear(from, to, board) {
-    return true // To do implement
+    const dx = to[1]-from[1]
+    const dy = to[0]-from[0]
+    const abs_dx = Math.abs(dx)
+    const abs_dy = Math.abs(dy)
+    const jx = clamp(dx)
+    const jy = clamp(dy)
+    console.assert(abs_dx===abs_dy || Math.min(abs_dx,abs_dy) === 0, "Base impl of path_clear only supports vertical horizontal and diagonal movement")
+    let crow = from[0]+jy
+    let ccol = from[1]+jx
+    for (let i = 0; i < Math.max(abs_dx,abs_dy)-2; i++){
+      let s_piece = board.at([crow,ccol])
+      if (s_piece != null) {
+        return false
+      }
+      crow+=jy
+      ccol+=jx
+    }
+    return true;
   }
   out_of_check(from, to, board){
     return true // To do implment
@@ -93,6 +114,9 @@ class Pawn extends Piece {
 class Knight extends Piece {
   constructor(color) {
     super(color);
+  }
+  path_clear(from, to, board){
+    return true
   }
 }
 
@@ -127,6 +151,9 @@ class King extends Piece {
   execute_move(from, to, board) {
     this.moved = true;
     super.execute_move(from, to, board)
+  }
+  path_clear(from, to, board){
+    return true // To do add checking for castling
   }
 }
 
