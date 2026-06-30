@@ -62,17 +62,20 @@ class Piece {
   }
   get piece_name() { return this.constructor.name }
   path_clear(from, to, board) {
-    return true
+    return true // To do implement
+  }
+  out_of_check(from, to, board){
+    return true // To do implment
   }
   is_legal(from, to, board) {
     const dest_piece = board.at(to)
-    return (dest_piece === null || dest_piece.color != this.color) && this.path_clear(from, to, board);
+    return (dest_piece === null || dest_piece.color != this.color) && this.path_clear(from, to, board) && this.out_of_check(from,to,board);
   }
   execute_move(from, to, board) {
     board.move(from, to);
   }
   move_attempt(from, to, board) {
-    console.assert(board.at(from) === this);
+    console.assert(board.at(from) === this, "Tried to get one piece to move another");
     if (!this.is_legal(from, to, board)) {
       return false
     }
@@ -136,14 +139,17 @@ const piece_from_char = {
   'K': King,
 }
 class Board {
+  in_bounds(spot) {
+    return spot[0] >= 0 && spot[0] < board_dim && spot[1] >= 0 && spot[1] < board_dim;
+  }
   constructor() {
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
-    console.assert(basic_setup.length === 2);
+    console.assert(basic_setup.length === 2, "BOard setup string not 2 high");
     let basic_setup_top = basic_setup[0].split(' ')
     let basic_setup_bottom = basic_setup[1].split(' ');
-    console.assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim)
+    console.assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, "Board setup string not 8 accross")
     this.board = Array(board_dim).fill().map(() => Array(board_dim).fill(null))
     for (let i in this.board) {
       let top = piece_from_char[basic_setup_top[i]]
@@ -156,6 +162,7 @@ class Board {
     this.turn = "White"
   }
   at(spot) {
+    console.assert(this.in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
   move_attempt(from, to) {
@@ -170,6 +177,9 @@ class Board {
     return true
   }
   valid_select(spot) {
+    if (!this.in_bounds(spot)){
+      return false;
+    }
     let piece = this.at(spot)
     return piece != null && piece.color === this.turn
   }
