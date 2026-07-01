@@ -8,8 +8,8 @@ You should have received a copy of the GNU General Public License along with Jav
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import {Board, board_dim, unicode_pieces, board_as_string } from './board.js'
-import {Pawn, Knight, Bishop, Rook, Queen, King} from './piece.js'
+import { Board, board_dim, unicode_pieces, board_as_string } from './board.js'
+import { Pawn, Knight, Bishop, Rook, Queen, King } from './piece.js'
 
 function clear(board) {
   for (let row = 0; row < board_dim; row++)
@@ -580,40 +580,40 @@ test('undo: restores before castle', function () {
   }
 })
 
-test('undo: Can not en passant because of undone double jump', function (){
+test('undo: Can not en passant because of undone double jump', function () {
   const board = new Board()
   setup(board)
-  place(board,1,3,new Pawn('Black'))
-  place(board,1,4,new Pawn('White'))
+  place(board, 1, 3, new Pawn('Black'))
+  place(board, 1, 4, new Pawn('White'))
   assert.strictEqual(board.move_attempt([1, 3], [3, 3]), 'succeeded')
   board.undo_last()
   assert.strictEqual(board.move_attempt([1, 4], [0, 3]), 'failed')
 })
 
-test('undo: Can undo promotion', function (){
+test('undo: Can undo promotion', function () {
   const board = new Board()
   setup(board)
-  place(board,1,3,new Pawn('White'))
+  place(board, 1, 3, new Pawn('White'))
   assert.strictEqual(board.move_attempt([1, 3], [0, 3]), 'promotion')
   assert.strictEqual(board.select_promotion('Queen'), true)
   board.undo_last()
-  assert.strictEqual(board.at([1,3]) instanceof Pawn, true)
-  assert.strictEqual(board.at([1,3]).color, 'White')
-  assert.strictEqual(board.at([0,3]), null)
+  assert.strictEqual(board.at([1, 3]) instanceof Pawn, true)
+  assert.strictEqual(board.at([1, 3]).color, 'White')
+  assert.strictEqual(board.at([0, 3]), null)
 })
 
-test('undo: Can undo promotion + capture', function (){
+test('undo: Can undo promotion + capture', function () {
   const board = new Board()
   setup(board)
-  place(board,1,3,new Pawn('White'))
-  place(board,0,4,new Rook('Black'))
+  place(board, 1, 3, new Pawn('White'))
+  place(board, 0, 4, new Rook('Black'))
   assert.strictEqual(board.move_attempt([1, 3], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Queen'), true)
   board.undo_last()
-  assert.strictEqual(board.at([1,3]) instanceof Pawn, true)
-  assert.strictEqual(board.at([1,3]).color, 'White')
-  assert.strictEqual(board.at([0,4]) instanceof Rook, true)
-  assert.strictEqual(board.at([0,4]).color, 'Black')
+  assert.strictEqual(board.at([1, 3]) instanceof Pawn, true)
+  assert.strictEqual(board.at([1, 3]).color, 'White')
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+  assert.strictEqual(board.at([0, 4]).color, 'Black')
 })
 
 

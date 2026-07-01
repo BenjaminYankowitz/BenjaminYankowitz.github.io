@@ -6,9 +6,9 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
-import {piece_from_char, King, promote_able, promote_able_type} from './piece.js'
-import {in_bounds, board_dim, point_dif} from './util.js'
-export {board_dim} from './util.js';
+import { piece_from_char, King, promote_able, promote_able_type } from './piece.js'
+import { in_bounds, board_dim, point_dif } from './util.js'
+export { board_dim } from './util.js';
 
 
 
@@ -88,10 +88,10 @@ export class Board {
     mover.alert_undo()
     if (mover instanceof King) {
       const [dy, dx] = point_dif(to, from)
-      if (Math.abs(dx) === 2){
-        const rook_pos_old = [from[0],King.get_rook_x(dx)]
-        const rook_pos = [to[0],to[1]-dx/2]
-        this.at(rook_pos).execute_move(rook_pos,rook_pos_old,this)
+      if (Math.abs(dx) === 2) {
+        const rook_pos_old = [from[0], King.get_rook_x(dx)]
+        const rook_pos = [to[0], to[1] - dx / 2]
+        this.at(rook_pos).execute_move(rook_pos, rook_pos_old, this)
       }
     }
     this.board[from[0]][from[1]] = mover

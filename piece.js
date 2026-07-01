@@ -6,7 +6,7 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
-import { in_bounds, point_equal, point_add, point_dif, board_dim, clamp} from "./util.js"
+import { in_bounds, point_equal, point_add, point_dif, board_dim, clamp } from "./util.js"
 
 class Piece {
   constructor(color) {
@@ -33,9 +33,7 @@ class Piece {
     }
     return true
   }
-  alert_undo(){
-
-  }
+  alert_undo() { }
   valid_pair(from, to) {
     return in_bounds(from) && in_bounds(to) && !point_equal(from, to)
   }
@@ -102,12 +100,12 @@ export class Pawn extends Piece {
     if (dx !== 0 && board.at(to) === null) {
       const enpassant_piece_pos = point_add(to, [-color_dir, 0])
       const enpassant_piece = board.at(enpassant_piece_pos)
-      const last_hist = board.history[board.history.length-1]
-      if (!(enpassant_piece instanceof Pawn) || enpassant_piece.color === this.color || last_hist===undefined){
+      const last_hist = board.history[board.history.length - 1]
+      if (!(enpassant_piece instanceof Pawn) || enpassant_piece.color === this.color || last_hist === undefined) {
         return false;
       }
-      const [pfrom,pto,_] =  last_hist
-      if (!point_equal(pto,enpassant_piece_pos) || Math.abs(pfrom[0]-from[0])!=2){
+      const [pfrom, pto, _] = last_hist
+      if (!point_equal(pto, enpassant_piece_pos) || Math.abs(pfrom[0] - from[0]) != 2) {
         return false
       }
     }
@@ -166,7 +164,7 @@ export class Rook extends Piece {
   valid_path(from, to, board) {
     return is_rook_move(from, to)
   }
-  alert_undo(){
+  alert_undo() {
     this.moved--
   }
 }
@@ -196,9 +194,9 @@ export class King extends Piece {
     const [dy, dx] = point_dif(to, from)
     this.moved++
     super.execute_move(from, to, board)
-    if (Math.abs(dx) === 2){
-      const rook_pos = [from[0],King.get_rook_x(dx)]
-      board.at(rook_pos).execute_move(rook_pos,[to[0],to[1]-dx/2],board)
+    if (Math.abs(dx) === 2) {
+      const rook_pos = [from[0], King.get_rook_x(dx)]
+      board.at(rook_pos).execute_move(rook_pos, [to[0], to[1] - dx / 2], board)
     }
   }
   path_clear(from, to, board) {
@@ -206,22 +204,22 @@ export class King extends Piece {
     if (Math.max(Math.abs(dy), Math.abs(dx)) === 1) {
       return true
     }
-    return super.path_clear(from, [from[0], King.get_rook_x(dx)],board) && !board.in_check([from[0],from[1]+dx/2])
+    return super.path_clear(from, [from[0], King.get_rook_x(dx)], board) && !board.in_check([from[0], from[1] + dx / 2])
   }
   valid_path(from, to, board) {
     const [dy, dx] = point_dif(to, from)
-    if (Math.abs(dx) === 2 && dy === 0 && this.moved==0) {
+    if (Math.abs(dx) === 2 && dy === 0 && this.moved == 0) {
       const rook = board.at([from[0], King.get_rook_x(dx)])
       if (board.in_check()) {
         return false;
       }
-      if (rook instanceof Rook && rook.color==this.color && rook.moved==0) {
+      if (rook instanceof Rook && rook.color == this.color && rook.moved == 0) {
         return true
       }
     }
     return Math.max(Math.abs(dy), Math.abs(dx)) === 1
   }
-  alert_undo(){
+  alert_undo() {
     this.moved--
   }
 }

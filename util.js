@@ -12,17 +12,17 @@ export function in_bounds(spot) {
 }
 
 export function clamp(n) {
-  return Math.min(Math.max(n, -1), 1)
+    return Math.min(Math.max(n, -1), 1)
 }
 
 export function point_dif(to, from) {
-  return [to[0] - from[0], to[1] - from[1]]
+    return [to[0] - from[0], to[1] - from[1]]
 }
 
 export function point_add(point, dif) {
-  return [point[0] + dif[0], point[1] + dif[1]]
+    return [point[0] + dif[0], point[1] + dif[1]]
 }
 
 export function point_equal(point1, point2) {
-  return point1[0] === point2[0] && point1[1] === point2[1]
+    return point1[0] === point2[0] && point1[1] === point2[1]
 }
