@@ -100,7 +100,7 @@ export class Board {
     }
     this.board[from[0]][from[1]] = mover
     this.board[to[0]][to[1]] = null
-    if (replace_info.capture!==undefined){
+    if (replace_info.capture !== undefined) {
       const [spot, piece] = replace_info.capture;
       this.board[spot[0]][spot[1]] = piece
     }
@@ -195,12 +195,13 @@ export class Board {
     if (target === null) {
       return false;
     }
-    const [from,to] = this.current_move
+    const [from, to] = this.current_move
     const old = this.at(to)
     const color = old.color
     this.board[to[0]][to[1]] = new target(color)
     this.current_turn_replaces.promotion = old
     this.in_promotion = null
+    this.current_move = null
     this.commit_move(from, to)
     return true;
   }
@@ -227,12 +228,12 @@ export class Board {
     return ret
   }
   list_all_legal() {
-    const ret = {length:0}
+    const ret = { length: 0 }
     for (let from_row = 0; from_row < board_dim; from_row++) {
       for (let from_col = 0; from_col < board_dim; from_col++) {
         const moves = this.list_legal_from([from_row, from_col])
         ret[from_row * board_dim + from_col] = moves
-        ret.length+=moves.length
+        ret.length += moves.length
       }
     }
     return ret
