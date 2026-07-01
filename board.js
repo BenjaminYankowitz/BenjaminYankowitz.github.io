@@ -206,6 +206,10 @@ export class Board {
     return true;
   }
   is_legal(from, to) {
+    if (this.in_promotion) {
+      console.assert('Don\'t try to use object mid promotion')
+      return false
+    }
     const from_piece = this.at(from)
     if (from_piece?.color !== this.turn || !from_piece.is_legal_basic(from, to, this)) {
       return false;
