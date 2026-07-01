@@ -8,7 +8,7 @@ You should have received a copy of the GNU General Public License along with Jav
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { Board, board_dim, unicode_pieces, board_as_string } from './board.js'
+import { Board, board_dim, board_as_string } from './board.js'
 import { Pawn, Knight, Bishop, Rook, Queen, King } from './piece.js'
 import { get_other_color } from './util.js'
 
@@ -222,7 +222,7 @@ test('promotion: can turn into queen', function () {
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
   assert.strictEqual(board.at([0, 4]).color, 'White')
-  assert.strictEqual(board.at([0, 4]) instanceof Queen, true, board_as_string(board, unicode_pieces))
+  assert.strictEqual(board.at([0, 4]) instanceof Queen, true, board_as_string(board))
 })
 
 test('promotion: can turn into rook', function () {
@@ -234,7 +234,7 @@ test('promotion: can turn into rook', function () {
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
   assert.strictEqual(board.at([0, 4]).color, 'White')
-  assert.strictEqual(board.at([0, 4]) instanceof Rook, true, board_as_string(board, unicode_pieces))
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true, board_as_string(board))
 })
 
 test('promotion: cannot turn into king', function () {

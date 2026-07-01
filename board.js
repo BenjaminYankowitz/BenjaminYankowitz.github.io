@@ -10,9 +10,7 @@ import { piece_from_char, King, promote_able, promote_able_type } from './piece.
 import { in_bounds, board_dim, point_dif } from './util.js'
 export { board_dim } from './util.js';
 
-
-
-export const unicode_pieces = {
+const unicode_pieces = {
   White: {
     King: '♔',
     Queen: '♕',
@@ -32,7 +30,7 @@ export const unicode_pieces = {
   Empty: ' '
 }
 
-export function board_as_string(board, piece_to_char) {
+export function board_as_string(board, piece_to_char = unicode_pieces) {
   let str = '-'.repeat(board_dim * 4 + 1)
   str += '\n'
   for (let row = 0; row < board_dim; row++) {
@@ -64,7 +62,7 @@ export class Board {
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
-    console.assert(basic_setup.length === 2, "BOard setup string not 2 high")
+    console.assert(basic_setup.length === 2, "Board setup string not 2 high")
     let basic_setup_top = basic_setup[0].split(' ')
     let basic_setup_bottom = basic_setup[1].split(' ')
     console.assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, "Board setup string not 8 accross")
@@ -84,34 +82,34 @@ export class Board {
       this.undo(...action)
     }
   }
+  undo_current(from, to) {
+    this.undo(from, to, this.current_turn_replaces)
+    this.current_turn_replaces = {}
+  }
+  transfer_piece(from, to) {
+    const moved = this.at(from)
+    console.assert(moved !== null, 'transfer_piece souce must not be null')
+    console.assert(this.at(to) === null, 'transfer_piece destination must be null')
+    this.set(to,moved)
+    this.set(from,null)
+    return moved
+  }
   undo(from, to, replace_info) {
-    const mover = this.at(to)
+    const mover = this.transfer_piece(to,from)
     mover.alert_undo()
     if (mover instanceof King) {
       const [dy, dx] = point_dif(to, from)
       if (Math.abs(dx) === 2) {
-        const rook_pos_old = [from[0], King.get_rook_x(dx)]
-        const rook_pos = [to[0], to[1] - dx / 2]
-        const rook = this.at(rook_pos);
-        this.board[rook_pos_old[0]][rook_pos_old[1]] = rook
-        this.board[rook_pos[0]][rook_pos[1]] = null
-        rook.alert_undo()
+        this.transfer_piece([to[0], to[1] - dx / 2], [from[0], King.get_rook_x(dx)]).alert_undo()
       }
     }
-    this.board[from[0]][from[1]] = mover
-    this.board[to[0]][to[1]] = null
-    if (replace_info.capture !== undefined) {
-      const [spot, piece] = replace_info.capture;
-      this.board[spot[0]][spot[1]] = piece
+    if ('capture' in replace_info) {
+      this.set(...replace_info.capture)
     }
-    if (replace_info.promotion) {
-      this.board[from[0]][from[1]] = replace_info.promotion
+    if ('promotion' in replace_info) {
+      this.set(from,replace_info.promotion)
     }
     this.in_promotion = false
-  }
-  undo_current(from, to) {
-    this.undo(from, to, this.current_turn_replaces)
-    this.current_turn_replaces = {}
   }
   commit_move(from, to) {
     this.history.push([from, to, this.current_turn_replaces])
@@ -155,10 +153,14 @@ export class Board {
     console.assert(in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
+  set(spot,value){
+    console.assert(in_bounds(spot), "Can only access points in bounds")
+    this.board[spot[0]][spot[1]] = value
+  }
   capture(spot) {
     console.assert(this.at(spot) !== null, "Cannot capture nothing")
     this.current_turn_replaces.capture = [spot, this.at(spot)]
-    this.board[spot[0]][spot[1]] = null
+    this.set(spot,null)
   }
   move_attempt(from, to) {
     if (this.in_promotion) {
@@ -177,8 +179,7 @@ export class Board {
     if (this.at(to) !== null) {
       this.capture(to)
     }
-    this.board[to[0]][to[1]] = this.at(from)
-    this.board[from[0]][from[1]] = null
+    this.transfer_piece(from,to)
   }
   select_promotion(promote_to) {
     console.assert(this.in_promotion, "Can only promote when something is ready to promote")
@@ -198,7 +199,7 @@ export class Board {
     const [from, to] = this.current_move
     const old = this.at(to)
     const color = old.color
-    this.board[to[0]][to[1]] = new target(color)
+    this.set(to,new target(color))
     this.current_turn_replaces.promotion = old
     this.in_promotion = null
     this.current_move = null
