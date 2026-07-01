@@ -243,9 +243,10 @@ test('promotion: cannot turn into king', function () {
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('King'), false)
-  assert.strictEqual(board.turn_num, 0)
-  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
-  assert.strictEqual(board.at([0, 4]), null)
+  assert.strictEqual(board.select_promotion('Rook'), true)
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.turn_num, 1)
 })
 
 test('promotion: cannot turn into pawn', function () {
@@ -254,9 +255,10 @@ test('promotion: cannot turn into pawn', function () {
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Pawn'), false)
-  assert.strictEqual(board.turn_num, 0)
-  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
-  assert.strictEqual(board.at([0, 4]), null)
+  assert.strictEqual(board.select_promotion('Rook'), true)
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.turn_num, 1)
 })
 
 test('promotion: cannot turn into random string', function () {
@@ -265,9 +267,10 @@ test('promotion: cannot turn into random string', function () {
   place(board, 1, 4, new Pawn('White'));
   assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Sfasf'), false)
-  assert.strictEqual(board.turn_num, 0)
-  assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
-  assert.strictEqual(board.at([0, 4]), null)
+  assert.strictEqual(board.select_promotion('Rook'), true)
+  assert.strictEqual(board.at([0, 4]) instanceof Rook, true)
+  assert.strictEqual(board.at([1, 4]), null)
+  assert.strictEqual(board.turn_num, 1)
 })
 
 test('promotion: can be undone', function () {
