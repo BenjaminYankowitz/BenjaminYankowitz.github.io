@@ -41,7 +41,7 @@ class Piece {
     const dest_piece = board.at(to)
     return this.valid_pair(from, to) && (dest_piece?.color !== this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
-  pre_move_hook(board) {}
+  pre_move_hook(board) { }
 }
 
 export class Pawn extends Piece {
@@ -49,7 +49,7 @@ export class Pawn extends Piece {
     super(color)
   }
   pre_move_hook(board) {
-    const [from,to] = board.current_move
+    const [from, to] = board.current_move
     const [dy, dx] = point_dif(to, from)
     if (dx !== 0 && board.at(to) === null) {
       board.capture([from[0], to[1]])
@@ -172,14 +172,14 @@ export class King extends Piece {
     this.moved = 0
   }
   pre_move_hook(board) {
-    const [from,to] = board.current_move
+    const [from, to] = board.current_move
     const [dy, dx] = point_dif(to, from)
     this.moved++
     if (Math.abs(dx) === 2) {
       const rook_pos = [from[0], King.get_rook_x(dx)]
       const rook = board.at(rook_pos)
       rook.pre_move_hook(board)
-      board.transfer_piece(rook_pos,[to[0], to[1] - dx / 2])
+      board.transfer_piece(rook_pos, [to[0], to[1] - dx / 2])
     }
   }
   path_clear(from, to, board) {

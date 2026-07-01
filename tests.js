@@ -499,7 +499,7 @@ test('in_check: castling-eligible kings are two squares apart does not trigger i
   place(board, 7, 6, new King('Black'))
   place(board, 7, 0, new Rook('Black'))
   place(board, 7, 2, new Knight('White'))
-  assert.strictEqual(board.in_check(),false)
+  assert.strictEqual(board.in_check(), false)
 })
 
 // --- Check prevention ---

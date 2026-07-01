@@ -82,9 +82,10 @@ export class Board {
       this.undo(...action)
     }
   }
-  undo_current(from, to) {
-    this.undo(from, to, this.current_turn_replaces)
+  undo_current() {
+    this.undo(this.current_move[0], this.current_move[1], this.current_turn_replaces)
     this.current_turn_replaces = {}
+    this.current_move = null
   }
   transfer_piece(from, to) {
     const moved = this.at(from)
@@ -111,8 +112,8 @@ export class Board {
     }
     this.in_promotion = false
   }
-  commit_move(from, to) {
-    this.history.push([from, to, this.current_turn_replaces])
+  commit_move() {
+    this.history.push([this.current_move[0], this.current_move[1], this.current_turn_replaces])
     this.current_turn_replaces = {}
     this.current_move = null
   }
@@ -163,7 +164,7 @@ export class Board {
     this.current_turn_replaces.capture = [spot, this.at(spot)]
     this.set(spot, null)
   }
-  move_attempt_no_commit(from,to){
+  move_attempt_no_commit(from, to) {
     if (this.in_promotion) {
       return "promotion"
     }
@@ -171,14 +172,14 @@ export class Board {
     if (!mover.is_legal_basic(from, to, this)) {
       return 'failed'
     }
-    this.current_move = [from,to]
+    this.current_move = [from, to]
     const needs_more_input = mover.pre_move_hook(this)
     if (this.at(to) !== null) {
       this.capture(to)
     }
     this.transfer_piece(from, to)
     if (this.in_check()) {
-      this.undo_current(from, to)
+      this.undo_current()
       return 'failed'
     }
     if (typeof needs_more_input === 'string') {
@@ -187,9 +188,9 @@ export class Board {
     return 'succeeded'
   }
   move_attempt(from, to) {
-    const ret = this.move_attempt_no_commit(from,to)
-    if (ret === 'succeeded'){
-      this.commit_move(from,to)
+    const ret = this.move_attempt_no_commit(from, to)
+    if (ret === 'succeeded') {
+      this.commit_move()
     }
     return ret
   }
@@ -220,9 +221,8 @@ export class Board {
     const color = old.color
     this.set(to, new target(color))
     this.current_turn_replaces.promotion = old
+    this.commit_move()
     this.in_promotion = null
-    this.current_move = null
-    this.commit_move(from, to)
     return true;
   }
   is_legal(from, to) {
@@ -234,10 +234,10 @@ export class Board {
     if (from_piece?.color !== this.turn || !from_piece.is_legal_basic(from, to, this)) {
       return false;
     }
-    if (this.move_attempt_no_commit(from,to) === 'failed'){
+    if (this.move_attempt_no_commit(from, to) === 'failed') {
       return false
     }
-    this.undo_current(from,to)
+    this.undo_current()
     return !this.in_check()
   }
   list_legal_from(from) {

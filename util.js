@@ -27,6 +27,6 @@ export function point_equal(point1, point2) {
     return point1[0] === point2[0] && point1[1] === point2[1]
 }
 
-export function get_other_color(color){
+export function get_other_color(color) {
     return color === 'White' ? 'Black' : 'White'
 }
