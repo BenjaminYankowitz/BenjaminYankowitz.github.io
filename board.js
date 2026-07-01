@@ -169,7 +169,7 @@ export class Board {
       return "promotion"
     }
     let mover = this.at(from);
-    if (!mover.is_legal_basic(from, to, this)) {
+    if (mover?.color !== this.turn || !mover.is_legal_basic(from, to, this)) {
       return 'failed'
     }
     this.current_move = [from, to]
@@ -229,10 +229,6 @@ export class Board {
     if (this.in_promotion) {
       console.assert('Don\'t try to use object mid promotion')
       return false
-    }
-    const from_piece = this.at(from)
-    if (from_piece?.color !== this.turn) {
-      return false;
     }
     if (this.move_attempt_no_commit(from, to) === 'failed') {
       return false

@@ -618,6 +618,7 @@ test('undo: Can not en passant because of undone double jump', function () {
   setup(board)
   place(board, 1, 3, new Pawn('Black'))
   place(board, 1, 4, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([7, 7], [7, 6]), 'succeeded')
   assert.strictEqual(board.move_attempt([1, 3], [3, 3]), 'succeeded')
   board.undo_last()
   assert.strictEqual(board.move_attempt([1, 4], [0, 3]), 'failed')
