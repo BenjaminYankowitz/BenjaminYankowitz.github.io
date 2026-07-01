@@ -287,6 +287,16 @@ test('promotion: can be undone', function () {
   assert.strictEqual(board.at([0, 4]), null)
 })
 
+test('promotion: cannot promote into check', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 1, 0, new King('White'))
+  place(board, 1, 4, new Pawn('White'))
+  place(board, 1, 7, new Rook('Black'))
+  place(board, 7, 7, new King('Black'))
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'failed')
+})
+
 test('undo: can castle again with same rook after undoing a castle', function () {
   const board = new Board()
   setup_castle(board, 'White')
@@ -700,4 +710,12 @@ test('Castling: Rook which moved blocks', function () {
   assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
   board.at([7, 7]).moved = false
   assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
+
+test('in_check: castling doesn\'t in_check', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 7, 4, new King('White'))
+  place(board, 7, 6, new King('Black'))
+  assert.strictEqual(board.in_check(), false)
 })
