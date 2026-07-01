@@ -71,11 +71,12 @@ export class Pawn extends Piece {
     if (dx !== 0 && board.at(to) === null) {
       board.capture([from[0], to[1]])
     }
+    super.execute_move(from, to, board)
     if (to[0] === 0 || to[0] === board_dim - 1) {
-      board.promote_info = [from, to]
+      board.current_move = [from,to]
+      board.in_promotion = true
       return 'promotion'
     }
-    super.execute_move(from, to, board)
   }
   valid_path(from, to, board) {
     const [dy, dx] = point_dif(to, from)

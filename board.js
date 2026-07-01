@@ -57,9 +57,10 @@ export function board_as_string(board, piece_to_char) {
 
 export class Board {
   constructor() {
-    this.promote_info = null;
+    this.current_move = []
+    this.in_promotion = false
     this.history = []
-    this.current_turn_capture = []
+    this.current_turn_replaces = {}
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
@@ -83,7 +84,7 @@ export class Board {
       this.undo(...action)
     }
   }
-  undo(from, to, capture_info) {
+  undo(from, to, replace_info) {
     const mover = this.at(to)
     mover.alert_undo()
     if (mover instanceof King) {
@@ -99,19 +100,22 @@ export class Board {
     }
     this.board[from[0]][from[1]] = mover
     this.board[to[0]][to[1]] = null
-    for (let i = 0; i < capture_info.length; i++) {
-      const c_info = capture_info[i];
-      this.board[c_info[0][0]][c_info[0][1]] = c_info[1]
+    if (replace_info.capture!==undefined){
+      const [spot, piece] = replace_info.capture;
+      this.board[spot[0]][spot[1]] = piece
     }
-    this.promote_info = null
+    if (replace_info.promotion) {
+      this.board[from[0]][from[1]] = replace_info.promotion
+    }
+    this.in_promotion = false
   }
   undo_current(from, to) {
-    this.undo(from, to, this.current_turn_capture)
-    this.current_turn_capture = []
+    this.undo(from, to, this.current_turn_replaces)
+    this.current_turn_replaces = {}
   }
   commit_move(from, to) {
-    this.history.push([from, to, this.current_turn_capture])
-    this.current_turn_capture = []
+    this.history.push([from, to, this.current_turn_replaces])
+    this.current_turn_replaces = {}
   }
   in_check(king = null) {
     const turn = this.turn
@@ -153,11 +157,11 @@ export class Board {
   }
   capture(spot) {
     console.assert(this.at(spot) !== null, "Cannot capture nothing")
-    this.current_turn_capture.push([spot, this.at(spot)])
+    this.current_turn_replaces.capture = [spot, this.at(spot)]
     this.board[spot[0]][spot[1]] = null
   }
   move_attempt(from, to) {
-    if (this.promote_info !== null) {
+    if (this.in_promotion) {
       return "promotion"
     }
     return this.at(from).move_attempt(from, to, this)
@@ -177,8 +181,8 @@ export class Board {
     this.board[from[0]][from[1]] = null
   }
   select_promotion(promote_to) {
-    console.assert(this.promote_info !== null, "Can only promote when something is ready to promote")
-    if (this.promote_info === null) {
+    console.assert(this.in_promotion, "Can only promote when something is ready to promote")
+    if (!this.in_promotion) {
       return false;
     }
     let target = null;
@@ -191,12 +195,12 @@ export class Board {
     if (target === null) {
       return false;
     }
-    const [from, to] = this.promote_info
-    const color = this.at(from).color
-    this.capture(from)
-    this.board[from[0]][from[1]] = new target(color)
-    this.move(from, to)
-    this.promote_info = null
+    const [from,to] = this.current_move
+    const old = this.at(to)
+    const color = old.color
+    this.board[to[0]][to[1]] = new target(color)
+    this.current_turn_replaces.promotion = old
+    this.in_promotion = null
     this.commit_move(from, to)
     return true;
   }
