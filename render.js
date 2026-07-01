@@ -27,7 +27,7 @@ export async function load_images() {
     return images
 }
 
-export function draw_board(canvas_context, square_size, images, board, black_color, white_color) {
+export function draw_board(canvas_context, images, board, black_color, white_color) {
     for (let row = 0; row < board_dim; row++) {
         for (let col = 0; col < board_dim; col++) {
             const piece = board.at([row, col])
@@ -36,24 +36,24 @@ export function draw_board(canvas_context, square_size, images, board, black_col
             } else {
                 canvas_context.fillStyle = black_color
             }
-            canvas_context.fillRect(col * square_size, row * square_size, square_size, square_size)
+            canvas_context.fillRect(col, row, 1, 1)
             if (piece !== null) {
                 const image = images[piece.name]
                 const piece_scale = 20 / 24
                 const piece_offset = (1 - piece_scale) / 2
-                canvas_context.drawImage(image, (col + piece_offset) * square_size, (row + piece_offset) * square_size, square_size * piece_scale, square_size * piece_scale)
+                canvas_context.drawImage(image, (col + piece_offset), (row + piece_offset), piece_scale, piece_scale)
             }
         }
     }
 }
 
-export function color_board(canvas_context, square_size, selection, board, selection_color, move_color) {
+export function color_board(canvas_context, selection, board, selection_color, move_color) {
     canvas_context.fillStyle = selection_color
-    canvas_context.fillRect(selection[1] * square_size, selection[0] * square_size, square_size, square_size)
+    canvas_context.fillRect(selection[1], selection[0], 1, 1)
     const moves = board.list_legal_from(selection)
     canvas_context.fillStyle = move_color
     for (let i = 0; i < moves.length; i++) {
         const move = moves[i]
-        canvas_context.fillRect(move[1] * square_size, move[0] * square_size, square_size, square_size)
+        canvas_context.fillRect(move[1], move[0], 1, 1)
     }
 }

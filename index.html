@@ -2,7 +2,7 @@
 Copyright 2026 Benjamin Yankowitz
 This file is part of JavascriptChess.
 JavascriptChess is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-JavascriptChess is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+JavascriptChess is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 -->
 
@@ -34,25 +34,32 @@ You should have received a copy of the GNU General Public License along with Jav
 		import { get_other_color } from './util.js'
 		const black_tile = 'rgb(80,55,20)'
 		const white_tile = 'rgb(230,230,230)'
+		const select_tile = 'rgb(255 0 0 / 20%)'
+		const legal_move_tile = 'rgb(255 0 0 / 20%)'
 		const images_promise = load_images()
 		const canvas = document.querySelector('.myCanvas')
-		const width = window.innerWidth
-		const height = window.innerHeight
-		const square_size = (Math.min(width, height)) / board_dim
-		const canvasLeft = canvas.offsetLeft + canvas.clientLeft;
-		const canvasTop = canvas.offsetTop + canvas.clientTop;
+		const canvas_context = canvas.getContext('2d')
+		let square_size
+		let canvasLeft
+		let canvasTop
+		function adjust_dims(){
+			square_size = (Math.min(window.innerWidth, window.innerHeight)) / board_dim
+			canvas.width = square_size * board_dim
+			canvas.height = square_size * board_dim
+			canvasLeft = canvas.offsetLeft + canvas.clientLeft
+			canvasTop = canvas.offsetTop + canvas.clientTop
+			canvas_context.scale(square_size,square_size)
+		}
+		adjust_dims()
 		function click_to_slection(event) {
 			return [Math.floor((event.pageY - canvasTop) / square_size), Math.floor((event.pageX - canvasLeft) / square_size)]
 		}
-		canvas.width = square_size * board_dim
-		canvas.height = square_size * board_dim
-		const canvas_context = canvas.getContext('2d');
-		const board = new Board();
-		let selected = null;
+		const board = new Board()
+		let selected = null
 		async function run() {
 			const images = await images_promise
 			const draw_board_lambda = function () {
-				draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+				draw_board(canvas_context, images, board, black_tile, white_tile)
 				if (board.in_checkmate()) {
 					alert(`Checkmate ${get_other_color(board.turn)} wins`)
 				}
@@ -60,24 +67,31 @@ You should have received a copy of the GNU General Public License along with Jav
 					alert('Stalemate it\'s a tie')
 				}
 			}
+			window.addEventListener('resize', function(){
+				adjust_dims()
+				draw_board_lambda()
+				if(selected!==null) {
+					color_board(canvas_context,selected, board, select_tile, legal_move_tile)
+				}
+			});
 			canvas.addEventListener('click', function (event) {
 				event.preventDefault()
 				if (selected === null) {
 					selected = click_to_slection(event)
 					if (!board.valid_select(selected)) {
-						selected = null;
+						selected = null
 						return
 					}
-					color_board(canvas_context, square_size,selected, board, 'rgb(255 0 0 / 20%)', 'rgb(0 255 0 / 20%)')
+					color_board(canvas_context,selected, board, select_tile, legal_move_tile)
 				} else {
 					const destination = click_to_slection(event)
 					if (board.move_attempt(selected, destination) === 'promotion') {
 						while (!board.select_promotion(prompt('What would you like to promote to, Queen, Knight, Rook, or Bishop'))) {}
 					}
-					selected = null;
+					selected = null
 					draw_board_lambda()
 				}
-			});
+			})
 			document.addEventListener('keydown', function (event) {
 				event.preventDefault()
 				if (event.key === 'u') {
@@ -85,7 +99,7 @@ You should have received a copy of the GNU General Public License along with Jav
 					board.undo_last()
 					draw_board_lambda()
 				}
-			});
+			})
 			draw_board_lambda()
 		}
 		run()
