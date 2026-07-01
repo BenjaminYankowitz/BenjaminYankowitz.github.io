@@ -29,7 +29,8 @@ You should have received a copy of the GNU General Public License along with Jav
 		</style>
 	</canvas>
 	<script type="module">
-		import { board_dim, Board, load_images, draw_board } from './main.js'
+		import { board_dim, Board } from './board.js'
+		import {load_images, draw_board} from './render.js'
 		const black_tile = 'rgb(80,55,20)'
 		const white_tile = 'rgb(230,230,230)'
 		const images_promise = load_images()

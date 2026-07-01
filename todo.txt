@@ -1,0 +1,3 @@
+add checkmate detection
+add ui stating checkmate status and current turn
+add stalemate detection
