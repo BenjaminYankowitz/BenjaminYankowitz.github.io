@@ -54,10 +54,10 @@ You should have received a copy of the GNU General Public License along with Jav
 			const draw_board_lambda = function () {
 				draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
 				if (board.in_checkmate()) {
-					prompt(`Checkmate ${get_other_color(board.turn)} wins`)
+					alert(`Checkmate ${get_other_color(board.turn)} wins`)
 				}
 				if (board.in_stalemate()) {
-					prompt('Stalemate it\'s a tie')
+					alert('Stalemate it\'s a tie')
 				}
 			}
 			canvas.addEventListener('click', function (event) {
