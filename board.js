@@ -89,13 +89,7 @@ export class Board {
   }
   undo(from, to, replace_info) {
     const mover = this.transfer_piece(to, from)
-    mover.alert_undo()
-    if (mover instanceof King) {
-      const [dy, dx] = point_dif(to, from)
-      if (Math.abs(dx) === 2) {
-        this.transfer_piece([to[0], to[1] - dx / 2], [from[0], King.get_rook_x(dx)]).alert_undo()
-      }
-    }
+    mover.alert_undo(from, to, this)
     if ('capture' in replace_info) {
       this.set(...replace_info.capture)
     }
@@ -241,7 +235,7 @@ export class Board {
     for (let from_row = 0; from_row < board_dim; from_row++) {
       for (let from_col = 0; from_col < board_dim; from_col++) {
         const moves = this.list_legal_from([from_row, from_col])
-        if (moves.length!==0){
+        if (moves.length !== 0) {
           ret[from_row * board_dim + from_col] = moves
           ret.length += moves.length
         }
@@ -249,7 +243,7 @@ export class Board {
     }
     return ret
   }
-  no_legal_moves(){
+  no_legal_moves() {
     return this.list_all_legal().length === 0
   }
   in_stalemate() {

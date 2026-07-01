@@ -36,7 +36,7 @@ class Piece {
   is_legal_basic(from, to, board) {
     return valid_pair(from, to) && (board.at(to)?.color !== this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
-  alert_undo() { }
+  alert_undo(from, to, board) { }
   pre_move_hook(board) { }
   valid_path(from, to, board) {
     game_assert(false, "Subclasses must implement valid_path")
@@ -131,7 +131,7 @@ export class Rook extends Piece {
   valid_path(from, to, board) {
     return is_rook_move(from, to)
   }
-  alert_undo() {
+  alert_undo(from, to, board) {
     this.moved--
   }
 }
@@ -180,8 +180,12 @@ export class King extends Piece {
     }
     return Math.max(Math.abs(dy), Math.abs(dx)) === 1
   }
-  alert_undo() {
+  alert_undo(from, to, board) {
     this.moved--
+    const [dy, dx] = point_dif(to, from)
+    if (Math.abs(dx) === 2) {
+      board.transfer_piece([to[0], to[1] - dx / 2], [from[0], King.get_rook_x(dx)]).alert_undo(from, to, board)
+    }
   }
 }
 
