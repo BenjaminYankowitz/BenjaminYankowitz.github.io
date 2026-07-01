@@ -210,10 +210,7 @@ export class King extends Piece {
     const [dy, dx] = point_dif(to, from)
     if (Math.abs(dx) === 2 && dy === 0 && this.moved == 0) {
       const rook = board.at([from[0], King.get_rook_x(dx)])
-      if (board.in_check()) {
-        return false;
-      }
-      if (rook instanceof Rook && rook.color == this.color && rook.moved == 0) {
+      if (rook instanceof Rook && rook.color == this.color && rook.moved == 0 && !board.in_check()) {
         return true
       }
     }
