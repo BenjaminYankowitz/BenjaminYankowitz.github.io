@@ -30,7 +30,7 @@ You should have received a copy of the GNU General Public License along with Jav
 	</canvas>
 	<script type="module">
 		import { board_dim, Board } from './board.js'
-		import { load_images, draw_board } from './render.js'
+		import { load_images, draw_board, color_board} from './render.js'
 		import { get_other_color } from './util.js'
 		const black_tile = 'rgb(80,55,20)'
 		const white_tile = 'rgb(230,230,230)'
@@ -68,8 +68,7 @@ You should have received a copy of the GNU General Public License along with Jav
 						selected = null;
 						return
 					}
-					canvas_context.fillStyle = "rgb(255 0 0 / 20%)"
-					canvas_context.fillRect(selected[1] * square_size, selected[0] * square_size, square_size, square_size)
+					color_board(canvas_context, square_size,selected, board, "rgb(255 0 0 / 20%)", "rgb(0 255 0 / 20%)")
 				} else {
 					const destination = click_to_slection(event)
 					if (board.move_attempt(selected, destination) === "promotion") {

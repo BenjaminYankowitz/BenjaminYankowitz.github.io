@@ -287,6 +287,15 @@ test('promotion: can be undone', function () {
   assert.strictEqual(board.at([0, 4]), null)
 })
 
+test('undo: can castle again with same rook after undoing a castle', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.at([7, 7]).moved, 0)
+  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+})
+
 // --- Knight ---
 
 test('knight: L-shape move', function () {

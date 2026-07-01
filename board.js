@@ -91,7 +91,10 @@ export class Board {
       if (Math.abs(dx) === 2) {
         const rook_pos_old = [from[0], King.get_rook_x(dx)]
         const rook_pos = [to[0], to[1] - dx / 2]
-        this.at(rook_pos).execute_move(rook_pos, rook_pos_old, this)
+        const rook = this.at(rook_pos);
+        this.board[rook_pos_old[0]][rook_pos_old[1]] = rook
+        this.board[rook_pos[0]][rook_pos[1]] = null
+        rook.alert_undo()
       }
     }
     this.board[from[0]][from[1]] = mover
