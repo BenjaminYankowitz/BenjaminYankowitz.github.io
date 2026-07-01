@@ -492,6 +492,16 @@ test('in_check: no threats', function () {
   assert.strictEqual(board.in_check(), false)
 })
 
+test('in_check: castling-eligible kings are two squares apart does not trigger infinte loop', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 7, 4, new King('White'))
+  place(board, 7, 6, new King('Black'))
+  place(board, 7, 0, new Rook('Black'))
+  place(board, 7, 2, new Knight('White'))
+  assert.strictEqual(board.in_check(),false)
+})
+
 // --- Check prevention ---
 
 test('move that exposes king to check is rejected', function () {
