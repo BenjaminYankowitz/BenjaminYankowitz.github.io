@@ -231,14 +231,14 @@ export class Board {
       return false
     }
     const from_piece = this.at(from)
-    if (from_piece?.color !== this.turn || !from_piece.is_legal_basic(from, to, this)) {
+    if (from_piece?.color !== this.turn) {
       return false;
     }
     if (this.move_attempt_no_commit(from, to) === 'failed') {
       return false
     }
     this.undo_current()
-    return !this.in_check()
+    return true
   }
   list_legal_from(from) {
     const ret = []
