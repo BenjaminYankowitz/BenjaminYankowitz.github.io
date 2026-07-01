@@ -530,6 +530,26 @@ test('undo: on empty history does nothing', function () {
   assert.strictEqual(board.at([0, 0]) instanceof Rook, true)
 })
 
+test('undo: Rook can castle after undo', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+
+  assert.strictEqual(board.move_attempt([7, 7], [7, 6]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.at([7, 4]) instanceof King, true)
+  assert.strictEqual(board.at([7, 7]) instanceof Rook, true)
+})
+
+test('undo: King can castle after undo', function () {
+  const board = new Board()
+  setup_castle(board, 'White')
+
+  assert.strictEqual(board.move_attempt([7, 4], [7, 5]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.at([7, 4]) instanceof King, true)
+  assert.strictEqual(board.at([7, 7]) instanceof Rook, true)
+})
+
 test('undo: restores before castle', function () {
   const board = new Board()
   setup_castle(board, 'White')
@@ -550,6 +570,43 @@ test('undo: restores before castle', function () {
     assert.strictEqual(board.at([7, col]), null, `col ${col} should be empty after undoing left castle`)
   }
 })
+
+test('undo: Can not en passant because of undone double jump', function (){
+  const board = new Board()
+  setup(board)
+  place(board,1,3,new Pawn('Black'))
+  place(board,1,4,new Pawn('White'))
+  assert.strictEqual(board.move_attempt([1, 3], [3, 3]), 'succeeded')
+  board.undo_last()
+  assert.strictEqual(board.move_attempt([1, 4], [0, 3]), 'failed')
+})
+
+test('undo: Can undo promotion', function (){
+  const board = new Board()
+  setup(board)
+  place(board,1,3,new Pawn('White'))
+  assert.strictEqual(board.move_attempt([1, 3], [0, 3]), 'promotion')
+  assert.strictEqual(board.select_promotion('Queen'), true)
+  board.undo_last()
+  assert.strictEqual(board.at([1,3]) instanceof Pawn, true)
+  assert.strictEqual(board.at([1,3]).color, 'White')
+  assert.strictEqual(board.at([0,3]), null)
+})
+
+test('undo: Can undo promotion + capture', function (){
+  const board = new Board()
+  setup(board)
+  place(board,1,3,new Pawn('White'))
+  place(board,0,4,new Rook('Black'))
+  assert.strictEqual(board.move_attempt([1, 3], [0, 4]), 'promotion')
+  assert.strictEqual(board.select_promotion('Queen'), true)
+  board.undo_last()
+  assert.strictEqual(board.at([1,3]) instanceof Pawn, true)
+  assert.strictEqual(board.at([1,3]).color, 'White')
+  assert.strictEqual(board.at([0,4]) instanceof Rook, true)
+  assert.strictEqual(board.at([0,4]).color, 'Black')
+})
+
 
 // --- Castling ---
 
