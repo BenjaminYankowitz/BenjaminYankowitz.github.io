@@ -7,7 +7,6 @@ You should have received a copy of the GNU General Public License along with Jav
 */
 
 /* Todo 
-add castling
 add checkmate detection
 add ui stating checkmate status and current turn
 add stalemate detection
@@ -115,6 +114,9 @@ class Piece {
     }
     return true
   }
+  alert_undo(){
+
+  }
   valid_pair(from, to) {
     return Board.in_bounds(from) && Board.in_bounds(to) && !point_equal(from, to)
   }
@@ -146,13 +148,10 @@ class Piece {
 export class Pawn extends Piece {
   constructor(color) {
     super(color)
-    this.double_jump_turn = -1
   }
   execute_move(from, to, board) {
     const [dy, dx] = point_dif(to, from)
-    if (Math.abs(dy) === 2) {
-      this.double_jump_turn = board.turn_num
-    } else if (dx !== 0 && board.at(to) === null) {
+    if (dx !== 0 && board.at(to) === null) {
       board.capture([from[0], to[1]])
     }
     if (to[0] === 0 || to[0] === board_dim - 1) {
@@ -182,8 +181,14 @@ export class Pawn extends Piece {
       return false
     }
     if (dx !== 0 && board.at(to) === null) {
-      let enpassant_piece = board.at(point_add(to, [-color_dir, 0]))
-      if (!(enpassant_piece instanceof Pawn) || enpassant_piece.double_jump_turn !== board.turn_num - 1 || this.piece_color === this.color) {
+      const enpassant_piece_pos = point_add(to, [-color_dir, 0])
+      const enpassant_piece = board.at(enpassant_piece_pos)
+      const last_hist = board.history[board.history.length-1]
+      if (!(enpassant_piece instanceof Pawn) || enpassant_piece.color === this.color || last_hist===undefined){
+        return false;
+      }
+      const [pfrom,pto,_] =  last_hist
+      if (!point_equal(pto,enpassant_piece_pos) || Math.abs(pfrom[0]-from[0])!=2){
         return false
       }
     }
@@ -221,14 +226,17 @@ export class Bishop extends Piece {
 export class Rook extends Piece {
   constructor(color) {
     super(color)
-    this.moved = false
+    this.moved = 0
   }
   execute_move(from, to, board) {
-    this.moved = true
+    this.moved++
     super.execute_move(from, to, board)
   }
   valid_path(from, to, board) {
     return is_rook_move(from, to)
+  }
+  alert_undo(){
+    this.moved--
   }
 }
 
@@ -242,20 +250,44 @@ export class Queen extends Piece {
 }
 
 export class King extends Piece {
+  static get_rook_x(dx) {
+    return dx === 2 ? board_dim - 1 : 0
+  }
   constructor(color) {
     super(color)
-    this.moved = false
+    this.moved = 0
   }
   execute_move(from, to, board) {
-    this.moved = true
+    const [dy, dx] = point_dif(to, from)
+    this.moved++
     super.execute_move(from, to, board)
+    if (Math.abs(dx) === 2){
+      const rook_pos = [from[0],King.get_rook_x(dx)]
+      board.at(rook_pos).execute_move(rook_pos,[to[0],to[1]-dx/2],board)
+    }
   }
   path_clear(from, to, board) {
-    return true // To do add checking for castling
+    const [dy, dx] = point_dif(to, from)
+    if (Math.max(Math.abs(dy), Math.abs(dx)) === 1) {
+      return true
+    }
+    return super.path_clear(from, [from[0], King.get_rook_x(dx)],board) && !board.in_check([from[0],from[1]+dx/2])
   }
   valid_path(from, to, board) {
     const [dy, dx] = point_dif(to, from)
-    return Math.max(Math.abs(dy), Math.abs(dx)) === 1 // To do add checking for castling
+    if (Math.abs(dx) === 2 && dy === 0 && this.moved==0) {
+      const rook = board.at([from[0], King.get_rook_x(dx)])
+      if (board.in_check()) {
+        return false;
+      }
+      if (rook instanceof Rook && rook.color==this.color && rook.moved==0) {
+        return true
+      }
+    }
+    return Math.max(Math.abs(dy), Math.abs(dx)) === 1
+  }
+  alert_undo(){
+    this.moved--
   }
 }
 
@@ -280,7 +312,7 @@ export class Board {
   constructor() {
     this.promote_info = null;
     this.history = []
-    this.current_turn_capture = null
+    this.current_turn_capture = []
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
@@ -304,27 +336,36 @@ export class Board {
       this.undo(...action)
     }
   }
-  undo(from, to, caputre_info) {
-    this.board[from[0]][from[1]] = this.at(to)
+  undo(from, to, capture_info) {
+    const mover = this.at(to)
+    mover.alert_undo()
+    if (mover instanceof King) {
+      const [dy, dx] = point_dif(to, from)
+      if (Math.abs(dx) === 2){
+        const rook_pos_old = [from[0],King.get_rook_x(dx)]
+        const rook_pos = [to[0],to[1]-dx/2]
+        this.at(rook_pos).execute_move(rook_pos,rook_pos_old,this)
+      }
+    }
+    this.board[from[0]][from[1]] = mover
     this.board[to[0]][to[1]] = null
-    if (caputre_info === null) {
-      return
+    for (let i = 0; i < capture_info.length; i++) {
+      const c_info = capture_info[i];
+      this.board[c_info[0][0]][c_info[0][1]] = c_info[1]
     }
     this.promote_info = null
-    this.board[caputre_info[0][0]][caputre_info[0][1]] = caputre_info[1]
   }
   undo_current(from, to) {
     this.undo(from, to, this.current_turn_capture)
-    this.current_turn_capture = null
+    this.current_turn_capture = []
   }
   commit_move(from, to) {
     this.history.push([from, to, this.current_turn_capture])
-    this.current_turn_capture = null
+    this.current_turn_capture = []
   }
-  in_check() {
+  in_check(king = null) {
     const turn = this.turn
     let attackers = []
-    let king = null
     for (let row = 0; row < board_dim; row++) {
       for (let col = 0; col < board_dim; col++) {
         const piece = this.at([row, col])
@@ -333,7 +374,7 @@ export class Board {
         }
         if (piece.color !== turn) {
           attackers.push([row, col])
-        } else if (piece instanceof King) {
+        } else if (king === null && piece instanceof King) {
           king = [row, col]
         }
       }
@@ -362,7 +403,7 @@ export class Board {
   }
   capture(spot) {
     console.assert(this.at(spot) !== null, "Cannot capture nothing")
-    this.current_turn_capture = [spot, this.at(spot)]
+    this.current_turn_capture.push([spot, this.at(spot)])
     this.board[spot[0]][spot[1]] = null
   }
   move_attempt(from, to) {
