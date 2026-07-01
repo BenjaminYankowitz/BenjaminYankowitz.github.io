@@ -825,3 +825,16 @@ test('in_stalemate: false on fresh board', function () {
   const board = new Board()
   assert.strictEqual(board.in_stalemate(), false)
 })
+
+test('integration: capute pawn start', function () {
+  const board = new Board()
+  assert.strictEqual(board.move_attempt([6, 4], [4,4]), 'succeeded')
+  assert.strictEqual(board.in_stalemate(),false)
+  assert.strictEqual(board.in_checkmate(),false)
+  assert.strictEqual(board.move_attempt([1, 3], [3,3]), 'succeeded')
+  assert.strictEqual(board.in_stalemate(),false)
+  assert.strictEqual(board.in_checkmate(),false)
+  assert.strictEqual(board.move_attempt([4, 4], [3,3]), 'succeeded')
+  assert.strictEqual(board.in_stalemate(),false)
+  assert.strictEqual(board.in_checkmate(),false)
+})
