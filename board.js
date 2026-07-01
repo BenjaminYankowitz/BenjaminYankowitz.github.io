@@ -67,7 +67,7 @@ export class Board {
     let basic_setup_bottom = basic_setup[1].split(' ')
     game_assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, 'Board setup string not 8 accross')
     this.board = Array(board_dim).fill().map(() => Array(board_dim).fill(null))
-    for (let i in this.board) {
+    for (let i = 0; i < board_dim; i++) {
       let top = piece_from_char[basic_setup_top[i]]
       let bottom = piece_from_char[basic_setup_bottom[i]]
       this.board[0][i] = new bottom('Black')
@@ -183,7 +183,7 @@ export class Board {
       this.undo_current()
       return 'failed'
     }
-    if (typeof needs_more_input === 'string') {
+    if (needs_more_input) {
       return needs_more_input
     }
     return 'succeeded'
@@ -200,18 +200,12 @@ export class Board {
       return false
     }
     let piece = this.at(spot)
-    return piece !== null && piece.color === this.turn
+    return piece?.color === this.turn
   }
   select_promotion(promote_to) {
     game_assert(this.in_promotion, 'Can only promote when something is ready to promote')
-    let target = null;
-    for (let i = 0; i < promote_able.length; i++) {
-      if (promote_able[i] === promote_to) {
-        target = promote_able_type[i];
-        break;
-      }
-    }
-    if (target === null) {
+    const target = promote_able_type[promote_able.indexOf(promote_to)];
+    if (target === undefined) {
       return false;
     }
     const [from, to] = this.current_move
@@ -224,10 +218,6 @@ export class Board {
     return true;
   }
   is_legal(from, to) {
-    if (this.in_promotion) {
-      game_assert('Don\'t try to use object mid promotion')
-      return false
-    }
     if (this.move_attempt_no_commit(from, to) === 'failed') {
       return false
     }
@@ -251,16 +241,21 @@ export class Board {
     for (let from_row = 0; from_row < board_dim; from_row++) {
       for (let from_col = 0; from_col < board_dim; from_col++) {
         const moves = this.list_legal_from([from_row, from_col])
-        ret[from_row * board_dim + from_col] = moves
-        ret.length += moves.length
+        if (moves.length!==0){
+          ret[from_row * board_dim + from_col] = moves
+          ret.length += moves.length
+        }
       }
     }
     return ret
   }
+  no_legal_moves(){
+    return this.list_all_legal().length === 0
+  }
   in_stalemate() {
-    return !this.in_check() && this.list_all_legal().length === 0
+    return !this.in_check() && this.no_legal_moves()
   }
   in_checkmate() {
-    return this.in_check() && this.list_all_legal().length === 0
+    return this.in_check() && this.no_legal_moves()
   }
 }
