@@ -6,7 +6,7 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
-import { in_bounds, point_equal, point_add, point_dif, board_dim, clamp } from './util.js'
+import { game_assert, in_bounds, point_equal, point_add, point_dif, board_dim, clamp } from './util.js'
 
 class Piece {
   constructor(color) {
@@ -20,7 +20,7 @@ class Piece {
     const [dy, dx] = point_dif(to, from)
     const jx = clamp(dx)
     const jy = clamp(dy)
-    console.assert(is_queen_move(from, to), `Base impl of path_clear only supports queen moves, tried moving a ${this.name} from ${from[0]}, ${from[1]} to ${to[0]}, ${to[1]}`)
+    game_assert(is_queen_move(from, to), `Base impl of path_clear only supports queen moves, tried moving a ${this.name} from ${from[0]}, ${from[1]} to ${to[0]}, ${to[1]}`)
     let crow = from[0] + jy
     let ccol = from[1] + jx
     for (let i = 1; i < Math.max(Math.abs(dx), Math.abs(dy)); i++) {

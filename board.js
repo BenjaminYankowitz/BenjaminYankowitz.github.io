@@ -7,7 +7,7 @@ You should have received a copy of the GNU General Public License along with Jav
 */
 
 import { piece_from_char, King, promote_able, promote_able_type } from './piece.js'
-import { in_bounds, board_dim, point_dif } from './util.js'
+import { game_assert, in_bounds, board_dim, point_dif } from './util.js'
 export { board_dim } from './util.js';
 
 const unicode_pieces = {
@@ -62,10 +62,10 @@ export class Board {
     const basic_setup = [
       "p p p p p p p p",
       "R N B Q K B N R"]
-    console.assert(basic_setup.length === 2, "Board setup string not 2 high")
+    game_assert(basic_setup.length === 2, "Board setup string not 2 high")
     let basic_setup_top = basic_setup[0].split(' ')
     let basic_setup_bottom = basic_setup[1].split(' ')
-    console.assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, "Board setup string not 8 accross")
+    game_assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, "Board setup string not 8 accross")
     this.board = Array(board_dim).fill().map(() => Array(board_dim).fill(null))
     for (let i in this.board) {
       let top = piece_from_char[basic_setup_top[i]]
@@ -89,8 +89,8 @@ export class Board {
   }
   transfer_piece(from, to) {
     const moved = this.at(from)
-    console.assert(moved !== null, 'transfer_piece souce must not be null')
-    console.assert(this.at(to) === null, 'transfer_piece destination must be null')
+    game_assert(moved !== null, 'transfer_piece souce must not be null')
+    game_assert(this.at(to) === null, 'transfer_piece destination must be null')
     this.set(to, moved)
     this.set(from, null)
     return moved
@@ -133,7 +133,7 @@ export class Board {
         }
       }
     }
-    console.assert(king !== null, "There must be king of both colors on the board")
+    game_assert(king !== null, "There must be king of both colors on the board")
     for (let i = 0; i < attackers.length; i++) {
       if (this.at(attackers[i]).is_legal_basic(attackers[i], king, this)) {
         return true
@@ -152,15 +152,15 @@ export class Board {
     }
   }
   at(spot) {
-    console.assert(in_bounds(spot), "Can only access points in bounds")
+    game_assert(in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
   set(spot, value) {
-    console.assert(in_bounds(spot), "Can only access points in bounds")
+    game_assert(in_bounds(spot), "Can only access points in bounds")
     this.board[spot[0]][spot[1]] = value
   }
   capture(spot) {
-    console.assert(this.at(spot) !== null, "Cannot capture nothing")
+    game_assert(this.at(spot) !== null, "Cannot capture nothing")
     this.current_turn_replaces.capture = [spot, this.at(spot)]
     this.set(spot, null)
   }
@@ -202,10 +202,7 @@ export class Board {
     return piece !== null && piece.color === this.turn
   }
   select_promotion(promote_to) {
-    console.assert(this.in_promotion, "Can only promote when something is ready to promote")
-    if (!this.in_promotion) {
-      return false;
-    }
+    game_assert(this.in_promotion, "Can only promote when something is ready to promote")
     let target = null;
     for (let i = 0; i < promote_able.length; i++) {
       if (promote_able[i] === promote_to) {
@@ -227,7 +224,7 @@ export class Board {
   }
   is_legal(from, to) {
     if (this.in_promotion) {
-      console.assert('Don\'t try to use object mid promotion')
+      game_assert('Don\'t try to use object mid promotion')
       return false
     }
     if (this.move_attempt_no_commit(from, to) === 'failed') {
