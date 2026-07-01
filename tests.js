@@ -751,3 +751,77 @@ test('Castling: Cannot capture', function () {
   board.board[7][2] = null
   assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'succeeded')
 })
+
+// --- in_checkmate / in_stalemate ---
+
+function setup_back_rank_mate(board, escape_square) {
+  clear(board)
+  place(board, 7, 4, new King('White'))
+  for (const col of [3, 4, 5]) {
+    if (col !== escape_square) place(board, 6, col, new Pawn('White'))
+  }
+  place(board, 7, 0, new Rook('Black'))
+  place(board, 0, 0, new King('Black'))
+}
+
+test('in_checkmate: back rank mate', function () {
+  const board = new Board()
+  setup_back_rank_mate(board, null)
+  assert.strictEqual(board.in_check(), true)
+  assert.strictEqual(board.in_checkmate(), true)
+  assert.strictEqual(board.in_stalemate(), false)
+})
+
+test('in_checkmate: false when king has an escape square', function () {
+  const board = new Board()
+  setup_back_rank_mate(board, 5)
+  assert.strictEqual(board.in_check(), true)
+  assert.strictEqual(board.in_checkmate(), false)
+  assert.strictEqual(board.in_stalemate(), false)
+})
+
+test('in_checkmate: false on fresh board', function () {
+  const board = new Board()
+  assert.strictEqual(board.in_checkmate(), false)
+})
+
+function setup_king_queen_stalemate(board) {
+  clear(board)
+  place(board, 0, 7, new King('Black'))
+  place(board, 1, 5, new King('White'))
+  place(board, 2, 6, new Queen('White'))
+  place(board, 6, 0, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([6, 0], [5, 0]), 'succeeded')
+  assert.strictEqual(board.turn, 'Black')
+}
+
+test('in_stalemate: king and queen stalemate', function () {
+  const board = new Board()
+  setup_king_queen_stalemate(board)
+  assert.strictEqual(board.in_check(), false)
+  assert.strictEqual(board.in_stalemate(), true)
+  assert.strictEqual(board.in_checkmate(), false)
+})
+
+test('in_stalemate: false when a legal move exists', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 0, 7, new King('Black'))
+  place(board, 5, 5, new King('White'))
+  place(board, 6, 0, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([6, 0], [5, 0]), 'succeeded')
+  assert.strictEqual(board.turn, 'Black')
+  assert.strictEqual(board.in_check(), false)
+  assert.strictEqual(board.in_stalemate(), false)
+})
+
+test('in_stalemate: false when in checkmate', function () {
+  const board = new Board()
+  setup_back_rank_mate(board, null)
+  assert.strictEqual(board.in_stalemate(), false)
+})
+
+test('in_stalemate: false on fresh board', function () {
+  const board = new Board()
+  assert.strictEqual(board.in_stalemate(), false)
+})
