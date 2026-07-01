@@ -152,6 +152,15 @@ test('pawn: blocked by piece directly ahead', function () {
   assert.strictEqual(board.move_attempt([4, 4], [3, 4]), 'failed')
 })
 
+test('pawn: blocked by piece two ahead', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 6, 4, new Pawn('White'))
+  place(board, 4, 4, new Pawn('Black'))
+  assert.strictEqual(board.move_attempt([6, 4], [4, 4]), 'failed')
+})
+
+
 test('pawn: cannot move backward', function () {
   const board = new Board()
   setup(board)
@@ -492,6 +501,14 @@ test('in_check: no threats', function () {
   assert.strictEqual(board.in_check(), false)
 })
 
+test('in_check: castling doesn\'t cause in_check infinite loop', function () {
+  const board = new Board()
+  clear(board)
+  place(board, 7, 4, new King('White'))
+  place(board, 7, 6, new King('Black'))
+  assert.strictEqual(board.in_check(), false)
+})
+
 test('in_check: castling-eligible kings are two squares apart does not trigger infinte loop', function () {
   const board = new Board()
   clear(board)
@@ -726,10 +743,11 @@ test('Castling: Rook which moved blocks', function () {
   assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
 })
 
-test('in_check: castling doesn\'t in_check', function () {
+test('Castling: Cannot capture', function () {
   const board = new Board()
-  clear(board)
-  place(board, 7, 4, new King('White'))
-  place(board, 7, 6, new King('Black'))
-  assert.strictEqual(board.in_check(), false)
+  setup_castle(board, 'White')
+  place(board, 7, 2, new Bishop('Black'))
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'failed')
+  board.board[7][2] = null
+  assert.strictEqual(board.move_attempt([7, 4], [7, 2]), 'succeeded')
 })

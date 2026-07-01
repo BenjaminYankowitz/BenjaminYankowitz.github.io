@@ -5,8 +5,8 @@ JavascriptChess is free software: you can redistribute it and/or modify it under
 JavascriptChess is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
-export function game_assert(condition,to_print){
-    if(!condition){
+export function game_assert(condition, to_print) {
+    if (!condition) {
         throw to_print
     }
 }
@@ -35,4 +35,8 @@ export function point_equal(point1, point2) {
 
 export function get_other_color(color) {
     return color === 'White' ? 'Black' : 'White'
+}
+
+export function valid_pair(from, to) {
+    return in_bounds(from) && in_bounds(to) && !point_equal(from, to)
 }
