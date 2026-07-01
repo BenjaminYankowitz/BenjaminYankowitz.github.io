@@ -31,6 +31,7 @@ You should have received a copy of the GNU General Public License along with Jav
 	<script type="module">
 		import { board_dim, Board } from './board.js'
 		import { load_images, draw_board } from './render.js'
+		import { get_other_color } from './util.js'
 		const black_tile = 'rgb(80,55,20)'
 		const white_tile = 'rgb(230,230,230)'
 		const images_promise = load_images()
@@ -52,6 +53,12 @@ You should have received a copy of the GNU General Public License along with Jav
 			const images = await images_promise
 			const draw_board_lambda = function () {
 				draw_board(canvas_context, square_size, images, board, black_tile, white_tile)
+				if (board.in_checkmate()) {
+					prompt(`Checkmate ${get_other_color(board.turn)} wins`)
+				}
+				if (board.in_stalemate()) {
+					prompt('Stalemate it\'s a tie')
+				}
 			}
 			canvas.addEventListener('click', function (event) {
 				event.preventDefault()

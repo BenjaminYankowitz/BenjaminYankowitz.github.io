@@ -6,6 +6,9 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
+import { piece_from_char } from './piece.js'
+import { board_dim } from './util.js'
+
 export async function load_images() {
     let images = {}
     let to_load = 0

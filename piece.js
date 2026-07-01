@@ -39,7 +39,7 @@ class Piece {
   }
   is_legal_basic(from, to, board) {
     const dest_piece = board.at(to)
-    return this.valid_pair(from, to) && dest_piece?.color !== this.color && this.valid_path(from, to, board) && this.path_clear(from, to, board)
+    return this.valid_pair(from, to) && (dest_piece?.color !== this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
   execute_move(from, to, board) {
     board.move(from, to)

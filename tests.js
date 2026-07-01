@@ -10,6 +10,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Board, board_dim, unicode_pieces, board_as_string } from './board.js'
 import { Pawn, Knight, Bishop, Rook, Queen, King } from './piece.js'
+import { get_other_color } from './util.js'
 
 function clear(board) {
   for (let row = 0; row < board_dim; row++)
@@ -623,11 +624,10 @@ function setup_castle(board, color) {
   clear(board)
   const home_row = color === 'White' ? 7 : 0
   const other_row = color === 'White' ? 0 : 7
-  const other_color = color === 'White' ? 'Black' : 'White'
   place(board, home_row, 4, new King(color))
   place(board, home_row, 0, new Rook(color))
   place(board, home_row, 7, new Rook(color))
-  place(board, other_row, 4, new King(other_color))
+  place(board, other_row, 4, new King(get_other_color(color)))
 }
 
 test('Castling: can castle left', function () {

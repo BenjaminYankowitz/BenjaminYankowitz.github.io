@@ -188,7 +188,7 @@ export class Board {
     if (target === null) {
       return false;
     }
-    let [from, to] = this.promote_info
+    const [from, to] = this.promote_info
     const color = this.at(from).color
     this.capture(from)
     this.board[from[0]][from[1]] = new target(color)
@@ -196,5 +196,44 @@ export class Board {
     this.promote_info = null
     this.commit_move(from, to)
     return true;
+  }
+  is_legal(from, to) {
+    const from_piece = this.at(from)
+    if (from_piece?.color !== this.turn || !from_piece.is_legal_basic(from, to, this)) {
+      return false;
+    }
+    from_piece.execute_move(from, to, this)
+    const ret = !this.in_check()
+    this.undo_current(from, to)
+    return ret
+  }
+  list_legal_from(from) {
+    const ret = []
+    for (let to_row = 0; to_row < board_dim; to_row++) {
+      for (let to_col = 0; to_col < board_dim; to_col++) {
+        const to = [to_row, to_col]
+        if (this.is_legal(from, to)) {
+          ret.push(to)
+        }
+      }
+    }
+    return ret
+  }
+  list_all_legal() {
+    const ret = {length:0}
+    for (let from_row = 0; from_row < board_dim; from_row++) {
+      for (let from_col = 0; from_col < board_dim; from_col++) {
+        const moves = this.list_legal_from([from_row, from_col])
+        ret[from_row * board_dim + from_col] = moves
+        ret.length+=moves.length
+      }
+    }
+    return ret
+  }
+  in_stalemate() {
+    return !this.in_check() && this.list_all_legal().length === 0
+  }
+  in_checkmate() {
+    return this.in_check() && this.list_all_legal().length === 0
   }
 }
