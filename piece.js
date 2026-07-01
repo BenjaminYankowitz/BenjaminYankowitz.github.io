@@ -72,6 +72,9 @@ export class Pawn extends Piece {
     if (dx === 0) {
       return board.at(to) === null && (Math.abs(dy) === 1 || from[0] === home_row)
     }
+    if(Math.abs(dy) === 2){
+      return false
+    }
     if (board.at(to) !== null) {
       return true
     }

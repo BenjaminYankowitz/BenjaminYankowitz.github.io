@@ -160,6 +160,14 @@ test('pawn: blocked by piece two ahead', function () {
   assert.strictEqual(board.move_attempt([6, 4], [4, 4]), 'failed')
 })
 
+test('pawn: cannot move two diagonal', function () {
+  const board = new Board()
+  setup(board)
+  place(board, 6, 4, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([6, 4], [4, 3]), 'failed')
+  place(board, 4, 3, new Pawn('Black'))
+  assert.strictEqual(board.move_attempt([6, 4], [4, 3]), 'failed')
+})
 
 test('pawn: cannot move backward', function () {
   const board = new Board()
