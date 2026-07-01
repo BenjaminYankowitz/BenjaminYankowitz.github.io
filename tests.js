@@ -217,7 +217,7 @@ test('promotion: can turn into queen', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Queen'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
@@ -229,7 +229,7 @@ test('promotion: can turn into rook', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Rook'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)
@@ -241,7 +241,7 @@ test('promotion: cannot turn into king', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('King'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
@@ -252,7 +252,7 @@ test('promotion: cannot turn into pawn', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Pawn'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
@@ -263,7 +263,7 @@ test('promotion: cannot turn into random string', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Sfasf'), false)
   assert.strictEqual(board.turn_num, 0)
   assert.strictEqual(board.at([1, 4]) instanceof Pawn, true)
@@ -274,7 +274,7 @@ test('promotion: can be undone', function () {
   const board = new Board()
   setup(board)
   place(board, 1, 4, new Pawn('White'));
-  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), "promotion")
+  assert.strictEqual(board.move_attempt([1, 4], [0, 4]), 'promotion')
   assert.strictEqual(board.select_promotion('Bishop'), true)
   assert.strictEqual(board.turn_num, 1)
   assert.strictEqual(board.at([1, 4]), null)

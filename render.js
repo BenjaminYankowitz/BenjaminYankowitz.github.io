@@ -13,7 +13,7 @@ export async function load_images() {
     let images = {}
     let to_load = 0
     for (let [_, piece] of Object.entries(piece_from_char)) {
-        const colors = ["Black", "White"]
+        const colors = ['Black', 'White']
         for (let i = 0; i < colors.length; i++) {
             let full_name = colors[i] + ' ' + piece.name
             images[full_name] = new Image()

@@ -6,7 +6,7 @@ JavascriptChess is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with JavascriptChess. If not, see <https://www.gnu.org/licenses/>. 
 */
 
-import { in_bounds, point_equal, point_add, point_dif, board_dim, clamp } from "./util.js"
+import { in_bounds, point_equal, point_add, point_dif, board_dim, clamp } from './util.js'
 
 class Piece {
   constructor(color) {
@@ -45,20 +45,20 @@ class Piece {
     board.move(from, to)
   }
   move_attempt(from, to, board) {
-    console.assert(board.at(from) === this, "Tried to get one piece to move another")
+    console.assert(board.at(from) === this, 'Tried to get one piece to move another')
     if (!this.is_legal_basic(from, to, board)) {
-      return "failed"
+      return 'failed'
     }
     const execution = this.execute_move(from, to, board)
     if (board.in_check()) {
       board.undo_current(from, to)
-      return "failed"
+      return 'failed'
     }
-    if (typeof execution === "string") {
+    if (typeof execution === 'string') {
       return execution
     }
     board.commit_move(from, to);
-    return "succeeded"
+    return 'succeeded'
   }
 }
 
@@ -73,7 +73,7 @@ export class Pawn extends Piece {
     }
     if (to[0] === 0 || to[0] === board_dim - 1) {
       board.promote_info = [from, to]
-      return "promotion"
+      return 'promotion'
     }
     super.execute_move(from, to, board)
   }
@@ -81,7 +81,7 @@ export class Pawn extends Piece {
     const [dy, dx] = point_dif(to, from)
     let color_dir = 1
     let home_row = 1
-    if (this.color === "White") {
+    if (this.color === 'White') {
       color_dir = -1
       home_row = 6
     }

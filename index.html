@@ -8,18 +8,18 @@ You should have received a copy of the GNU General Public License along with Jav
 
 
 <!doctype html>
-<html lang="en">
+<html lang='en'>
 
 <head>
-	<meta charset="UTF-8" />
+	<meta charset='UTF-8' />
 	<title>Chess</title>
-	<link rel="icon" type="image/x-icon" href="/assets/Black Pawn.svg">
-	<style type="text/css">
+	<link rel='icon' type='image/x-icon' href='/assets/Black Pawn.svg'>
+	<style type='text/css'>
 	</style>
 </head>
 
 <body>
-	<canvas width="100" height="100" class="myCanvas">
+	<canvas width='100' height='100' class='myCanvas'>
 		<p>Your browser doesn't support canvas.</p>
 		<style>
 			body {
@@ -28,7 +28,7 @@ You should have received a copy of the GNU General Public License along with Jav
 			}
 		</style>
 	</canvas>
-	<script type="module">
+	<script type='module'>
 		import { board_dim, Board } from './board.js'
 		import { load_images, draw_board, color_board} from './render.js'
 		import { get_other_color } from './util.js'
@@ -68,12 +68,12 @@ You should have received a copy of the GNU General Public License along with Jav
 						selected = null;
 						return
 					}
-					color_board(canvas_context, square_size,selected, board, "rgb(255 0 0 / 20%)", "rgb(0 255 0 / 20%)")
+					color_board(canvas_context, square_size,selected, board, 'rgb(255 0 0 / 20%)', 'rgb(0 255 0 / 20%)')
 				} else {
 					const destination = click_to_slection(event)
-					if (board.move_attempt(selected, destination) === "promotion") {
+					if (board.move_attempt(selected, destination) === 'promotion') {
 						draw_board_lambda()
-						while (!board.select_promotion(prompt("What would you like to promote to, Queen, Knight, Rook, or Bishop"))) {
+						while (!board.select_promotion(prompt('What would you like to promote to, Queen, Knight, Rook, or Bishop'))) {
 							console.log
 						}
 					}
