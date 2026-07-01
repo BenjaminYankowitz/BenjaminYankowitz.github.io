@@ -41,39 +41,20 @@ class Piece {
     const dest_piece = board.at(to)
     return this.valid_pair(from, to) && (dest_piece?.color !== this.color) && this.valid_path(from, to, board) && this.path_clear(from, to, board)
   }
-  execute_move(from, to, board) {
-    board.move(from, to)
-  }
-  move_attempt(from, to, board) {
-    console.assert(board.at(from) === this, 'Tried to get one piece to move another')
-    if (!this.is_legal_basic(from, to, board)) {
-      return 'failed'
-    }
-    const execution = this.execute_move(from, to, board)
-    if (board.in_check()) {
-      board.undo_current(from, to)
-      return 'failed'
-    }
-    if (typeof execution === 'string') {
-      return execution
-    }
-    board.commit_move(from, to);
-    return 'succeeded'
-  }
+  pre_move_hook(board) {}
 }
 
 export class Pawn extends Piece {
   constructor(color) {
     super(color)
   }
-  execute_move(from, to, board) {
+  pre_move_hook(board) {
+    const [from,to] = board.current_move
     const [dy, dx] = point_dif(to, from)
     if (dx !== 0 && board.at(to) === null) {
       board.capture([from[0], to[1]])
     }
-    super.execute_move(from, to, board)
     if (to[0] === 0 || to[0] === board_dim - 1) {
-      board.current_move = [from,to]
       board.in_promotion = true
       return 'promotion'
     }
@@ -158,9 +139,8 @@ export class Rook extends Piece {
     super(color)
     this.moved = 0
   }
-  execute_move(from, to, board) {
+  pre_move_hook(board) {
     this.moved++
-    super.execute_move(from, to, board)
   }
   valid_path(from, to, board) {
     return is_rook_move(from, to)
@@ -191,13 +171,15 @@ export class King extends Piece {
     super(color)
     this.moved = 0
   }
-  execute_move(from, to, board) {
+  pre_move_hook(board) {
+    const [from,to] = board.current_move
     const [dy, dx] = point_dif(to, from)
     this.moved++
-    super.execute_move(from, to, board)
     if (Math.abs(dx) === 2) {
       const rook_pos = [from[0], King.get_rook_x(dx)]
-      board.at(rook_pos).execute_move(rook_pos, [to[0], to[1] - dx / 2], board)
+      const rook = board.at(rook_pos)
+      rook.pre_move_hook(board)
+      board.transfer_piece(rook_pos,[to[0], to[1] - dx / 2])
     }
   }
   path_clear(from, to, board) {

@@ -55,7 +55,7 @@ export function board_as_string(board, piece_to_char = unicode_pieces) {
 
 export class Board {
   constructor() {
-    this.current_move = []
+    this.current_move = null
     this.in_promotion = false
     this.history = []
     this.current_turn_replaces = {}
@@ -90,12 +90,12 @@ export class Board {
     const moved = this.at(from)
     console.assert(moved !== null, 'transfer_piece souce must not be null')
     console.assert(this.at(to) === null, 'transfer_piece destination must be null')
-    this.set(to,moved)
-    this.set(from,null)
+    this.set(to, moved)
+    this.set(from, null)
     return moved
   }
   undo(from, to, replace_info) {
-    const mover = this.transfer_piece(to,from)
+    const mover = this.transfer_piece(to, from)
     mover.alert_undo()
     if (mover instanceof King) {
       const [dy, dx] = point_dif(to, from)
@@ -107,13 +107,14 @@ export class Board {
       this.set(...replace_info.capture)
     }
     if ('promotion' in replace_info) {
-      this.set(from,replace_info.promotion)
+      this.set(from, replace_info.promotion)
     }
     this.in_promotion = false
   }
   commit_move(from, to) {
     this.history.push([from, to, this.current_turn_replaces])
     this.current_turn_replaces = {}
+    this.current_move = null
   }
   in_check(king = null) {
     const turn = this.turn
@@ -153,20 +154,38 @@ export class Board {
     console.assert(in_bounds(spot), "Can only access points in bounds")
     return this.board[spot[0]][spot[1]]
   }
-  set(spot,value){
+  set(spot, value) {
     console.assert(in_bounds(spot), "Can only access points in bounds")
     this.board[spot[0]][spot[1]] = value
   }
   capture(spot) {
     console.assert(this.at(spot) !== null, "Cannot capture nothing")
     this.current_turn_replaces.capture = [spot, this.at(spot)]
-    this.set(spot,null)
+    this.set(spot, null)
   }
   move_attempt(from, to) {
     if (this.in_promotion) {
       return "promotion"
     }
-    return this.at(from).move_attempt(from, to, this)
+    let mover = this.at(from);
+    if (!mover.is_legal_basic(from, to, this)) {
+      return 'failed'
+    }
+    this.current_move = [from,to]
+    const needs_more_input = mover.pre_move_hook(this)
+    if (this.at(to) !== null) {
+      this.capture(to)
+    }
+    this.transfer_piece(from, to)
+    if (this.in_check()) {
+      this.undo_current(from, to)
+      return 'failed'
+    }
+    if (typeof needs_more_input === 'string') {
+      return needs_more_input
+    }
+    this.commit_move(from, to);
+    return 'succeeded'
   }
   valid_select(spot) {
     if (!in_bounds(spot)) {
@@ -174,12 +193,6 @@ export class Board {
     }
     let piece = this.at(spot)
     return piece !== null && piece.color === this.turn
-  }
-  move(from, to) {
-    if (this.at(to) !== null) {
-      this.capture(to)
-    }
-    this.transfer_piece(from,to)
   }
   select_promotion(promote_to) {
     console.assert(this.in_promotion, "Can only promote when something is ready to promote")
@@ -199,7 +212,7 @@ export class Board {
     const [from, to] = this.current_move
     const old = this.at(to)
     const color = old.color
-    this.set(to,new target(color))
+    this.set(to, new target(color))
     this.current_turn_replaces.promotion = old
     this.in_promotion = null
     this.current_move = null
