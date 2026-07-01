@@ -163,7 +163,7 @@ export class Board {
     this.current_turn_replaces.capture = [spot, this.at(spot)]
     this.set(spot, null)
   }
-  move_attempt(from, to) {
+  move_attempt_no_commit(from,to){
     if (this.in_promotion) {
       return "promotion"
     }
@@ -184,8 +184,14 @@ export class Board {
     if (typeof needs_more_input === 'string') {
       return needs_more_input
     }
-    this.commit_move(from, to);
     return 'succeeded'
+  }
+  move_attempt(from, to) {
+    const ret = this.move_attempt_no_commit(from,to)
+    if (ret === 'succeeded'){
+      this.commit_move(from,to)
+    }
+    return ret
   }
   valid_select(spot) {
     if (!in_bounds(spot)) {
@@ -228,10 +234,11 @@ export class Board {
     if (from_piece?.color !== this.turn || !from_piece.is_legal_basic(from, to, this)) {
       return false;
     }
-    from_piece.execute_move(from, to, this)
-    const ret = !this.in_check()
-    this.undo_current(from, to)
-    return ret
+    if (this.move_attempt_no_commit(from,to) === 'failed'){
+      return false
+    }
+    this.undo_current(from,to)
+    return !this.in_check()
   }
   list_legal_from(from) {
     const ret = []
