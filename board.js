@@ -60,20 +60,20 @@ export class Board {
     this.history = []
     this.current_turn_replaces = {}
     const basic_setup = [
-      "p p p p p p p p",
-      "R N B Q K B N R"]
-    game_assert(basic_setup.length === 2, "Board setup string not 2 high")
+      'p p p p p p p p',
+      'R N B Q K B N R']
+    game_assert(basic_setup.length === 2, 'Board setup string not 2 high')
     let basic_setup_top = basic_setup[0].split(' ')
     let basic_setup_bottom = basic_setup[1].split(' ')
-    game_assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, "Board setup string not 8 accross")
+    game_assert(basic_setup_top.length === board_dim && basic_setup_bottom.length === board_dim, 'Board setup string not 8 accross')
     this.board = Array(board_dim).fill().map(() => Array(board_dim).fill(null))
     for (let i in this.board) {
       let top = piece_from_char[basic_setup_top[i]]
       let bottom = piece_from_char[basic_setup_bottom[i]]
-      this.board[0][i] = new bottom("Black")
-      this.board[1][i] = new top("Black")
-      this.board[board_dim - 2][i] = new top("White")
-      this.board[board_dim - 1][i] = new bottom("White")
+      this.board[0][i] = new bottom('Black')
+      this.board[1][i] = new top('Black')
+      this.board[board_dim - 2][i] = new top('White')
+      this.board[board_dim - 1][i] = new bottom('White')
     }
   }
   undo_last() {
@@ -86,14 +86,6 @@ export class Board {
     this.undo(this.current_move[0], this.current_move[1], this.current_turn_replaces)
     this.current_turn_replaces = {}
     this.current_move = null
-  }
-  transfer_piece(from, to) {
-    const moved = this.at(from)
-    game_assert(moved !== null, 'transfer_piece souce must not be null')
-    game_assert(this.at(to) === null, 'transfer_piece destination must be null')
-    this.set(to, moved)
-    this.set(from, null)
-    return moved
   }
   undo(from, to, replace_info) {
     const mover = this.transfer_piece(to, from)
@@ -133,7 +125,7 @@ export class Board {
         }
       }
     }
-    game_assert(king !== null, "There must be king of both colors on the board")
+    game_assert(king !== null, 'There must be king of both colors on the board')
     for (let i = 0; i < attackers.length; i++) {
       if (this.at(attackers[i]).is_legal_basic(attackers[i], king, this)) {
         return true
@@ -146,27 +138,36 @@ export class Board {
   }
   get turn() {
     if (this.turn_num % 2 === 0) {
-      return "White"
+      return 'White'
     } else {
-      return "Black"
+      return 'Black'
     }
   }
   at(spot) {
-    game_assert(in_bounds(spot), "Can only access points in bounds")
+    game_assert(in_bounds(spot), 'Can only access points in bounds')
     return this.board[spot[0]][spot[1]]
   }
   set(spot, value) {
-    game_assert(in_bounds(spot), "Can only access points in bounds")
+    game_assert(in_bounds(spot), 'Can only access points in bounds')
     this.board[spot[0]][spot[1]] = value
   }
+  transfer_piece(from, to) {
+    const moved = this.at(from)
+    game_assert(moved !== null, 'transfer_piece souce must not be null')
+    game_assert(this.at(to) === null, 'transfer_piece destination must be null')
+    this.set(to, moved)
+    this.set(from, null)
+    return moved
+  }
   capture(spot) {
-    game_assert(this.at(spot) !== null, "Cannot capture nothing")
+    game_assert(this.at(spot) !== null, 'Cannot capture nothing')
     this.current_turn_replaces.capture = [spot, this.at(spot)]
     this.set(spot, null)
   }
   move_attempt_no_commit(from, to) {
+    game_assert(!this.in_promotion, 'Cannot move during promotion')
     if (this.in_promotion) {
-      return "promotion"
+      return 'promotion'
     }
     let mover = this.at(from);
     if (mover?.color !== this.turn || !mover.is_legal_basic(from, to, this)) {
@@ -202,7 +203,7 @@ export class Board {
     return piece !== null && piece.color === this.turn
   }
   select_promotion(promote_to) {
-    game_assert(this.in_promotion, "Can only promote when something is ready to promote")
+    game_assert(this.in_promotion, 'Can only promote when something is ready to promote')
     let target = null;
     for (let i = 0; i < promote_able.length; i++) {
       if (promote_able[i] === promote_to) {
