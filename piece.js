@@ -173,7 +173,17 @@ export class King extends Piece {
   }
   path_clear(from, to, board) {
     const [dy, dx] = point_dif(to, from)
-    return Math.max(Math.abs(dy), Math.abs(dx)) === 1 || (super.path_clear(from, [from[0], King.get_rook_x(dx)], board) && !board.in_check([from[0], from[1] + dx / 2]))
+    if (Math.max(Math.abs(dy), Math.abs(dx)) === 1){
+      return true
+    }
+    if (!super.path_clear(from, [from[0], King.get_rook_x(dx)], board)){
+      return false
+    }
+    const middle_pos = [from[0], from[1] + dx / 2]
+    board.transfer_piece(from,middle_pos)
+    const ret = !board.in_check()
+    board.transfer_piece(middle_pos,from)
+    return ret
   }
   valid_path(from, to, board) {
     const [dy, dx] = point_dif(to, from)

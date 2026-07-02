@@ -103,8 +103,9 @@ export class Board {
     this.current_turn_replaces = {}
     this.current_move = null
   }
-  in_check(king = null) {
+  in_check() {
     const turn = this.turn
+    let king = null
     let attackers = []
     for (let row = 0; row < board_dim; row++) {
       for (let col = 0; col < board_dim; col++) {

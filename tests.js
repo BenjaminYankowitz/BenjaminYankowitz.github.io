@@ -736,10 +736,11 @@ test('Castling: check on the way blocks', function () {
 test('Castling: pawn check on the way blocks', function () {
   const board = new Board()
   setup_castle(board, 'Black')
-  place(board, 6, 4, new Pawn('White'))
-  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'failed')
-  board.board[6][4] = null
-  assert.strictEqual(board.move_attempt([7, 4], [7, 6]), 'succeeded')
+  assert.strictEqual(board.move_attempt([7, 4], [7, 3]), 'succeeded')
+  place(board, 1, 4, new Pawn('White'))
+  assert.strictEqual(board.move_attempt([0, 4], [0, 6]), 'failed')
+  board.board[1][4] = null
+  assert.strictEqual(board.move_attempt([0, 4], [0, 6]), 'succeeded')
 })
 
 test('Castling: King which moved blocks', function () {
