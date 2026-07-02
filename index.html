@@ -86,7 +86,9 @@ You should have received a copy of the GNU General Public License along with Jav
 				} else {
 					const destination = click_to_slection(event)
 					if (board.move_attempt(selected, destination) === 'promotion') {
-						while (!board.select_promotion(prompt('What would you like to promote to, Queen, Knight, Rook, or Bishop'))) {}
+						if (!board.select_promotion(prompt('What would you like to promote to, Queen, Knight, Rook, or Bishop'))){
+							board.undo_current()
+						}
 					}
 					selected = null
 					draw_board_lambda()
